@@ -1,0 +1,18 @@
+{
+  "name": "now-sync",
+  "version": "0.0.1",
+  "description": "A tool to help developers sync their JavaScript resources with ServiceNow.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kai Yao",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^3.12.2"
+  },
+  "dependencies": {
+    "chokidar": "^1.6.1",
+    "node-fetch": "^1.6.3"
+  }
+}
