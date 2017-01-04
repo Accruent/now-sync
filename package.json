@@ -16,7 +16,9 @@
   },
   "dependencies": {
     "chokidar": "^1.6.1",
+    "commander": "^2.9.0",
     "node-fetch": "^1.6.3",
+    "roadrunner": "^1.1.0",
     "yeoman-generator": "^1.0.1"
   },
   "engines": {

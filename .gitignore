@@ -29,6 +29,7 @@ Temporary Items
 
 # Node/JavaScript
 node_modules/
+.roadrunner.json
 
 # Environment
 .vscode/

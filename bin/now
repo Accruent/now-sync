@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
+const roadrunner = require('roadrunner');
 const cli = require('../cli');
 
-process.title = 'now';
+roadrunner.load();
 cli();
+roadrunner.save();
