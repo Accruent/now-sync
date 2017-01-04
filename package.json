@@ -8,11 +8,18 @@
   },
   "author": "Kai Yao",
   "license": "MIT",
+  "bin": {
+    "now": "bin/now"
+  },
   "devDependencies": {
     "eslint": "^3.12.2"
   },
   "dependencies": {
     "chokidar": "^1.6.1",
-    "node-fetch": "^1.6.3"
+    "node-fetch": "^1.6.3",
+    "yeoman-generator": "^1.0.1"
+  },
+  "engines": {
+    "node": ">=6.9.2"
   }
 }

@@ -29,3 +29,6 @@ Temporary Items
 
 # Node/JavaScript
 node_modules/
+
+# Environment
+.vscode/
