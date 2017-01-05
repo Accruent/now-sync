@@ -1,17 +1,72 @@
 env:
   es6: true
   node: true
-extends: 'eslint:recommended'
+extends: 'airbnb-base'
 rules:
+  arrow-body-style:
+    - error
+    - as-needed
+  comma-dangle:
+    - error
+    - never
+  comma-spacing:
+    - warn
+  func-names:
+    - warn
   indent:
     - error
     - tab
+  key-spacing:
+    - error
+    - mode: minimum
   linebreak-style:
     - error
     - unix
+  no-alert:
+    - warn
+  no-console:
+    - warn
+  no-debugger:
+    - warn
+  no-extra-semi:
+    - error
+  no-param-reassign:
+    - error
+    - props: false
+  no-restricted-syntax:
+    - warn
+  no-tabs:
+    - 0
+  no-trailing-spaces:
+    - warn
+    - skipBlankLines: true
+  no-undef:
+    - error
+  no-unreachable:
+    - error
+  no-unused-vars:
+    - error
+  no-use-before-define:
+    - error
+    - nofunc
+  no-var:
+    - warn
+  object-curly-spacing:
+    - warn
+  prefer-const:
+    - error
+  prefer-template:
+    - error
   quotes:
     - error
     - single
   semi:
     - error
     - always
+  strict:
+    - warn
+    - safe
+  template-curly-spacing:
+    - warn
+  vars-on-top:
+    - warn
