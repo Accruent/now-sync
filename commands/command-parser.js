@@ -16,9 +16,15 @@ module.exports = class CommandParser {
 	}
 
 	runAction() {
-		if (this.requiresConfigFile && !this.hasConfigFile()) {
-			const errorMsg = chalk.bold.red(`${configFileName} not found. run \`now config\` first.`);
-			console.error(errorMsg); // eslint-disable-line no-console
+		if (this.requiresConfigFile) {
+			this.hasConfigFile()
+				.then(() => {
+					this.action();
+				})
+				.catch(() => {
+					const errorMsg = chalk.bold.red(`${configFileName} not found. Run \`now config\` first.`);
+					console.error(errorMsg); // eslint-disable-line no-console
+				});
 		} else {
 			this.action();
 		}
