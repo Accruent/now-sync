@@ -6,6 +6,7 @@ rules:
   arrow-body-style:
     - error
     - as-needed
+  class-methods-use-this: off
   comma-dangle:
     - error
     - never
@@ -63,6 +64,8 @@ rules:
   semi:
     - error
     - always
+  space-in-parens: off
+  spaced-comment: off
   strict:
     - warn
     - safe
