@@ -1,8 +1,8 @@
 const path = require('path');
 const chalk = require('chalk');
-const fetch = require('node-fetch');
 const ora = require('ora');
 const CommandParser = require('../command-parser');
+const { get } = require('../../util/api');
 
 module.exports =
 class Info extends CommandParser {
@@ -13,24 +13,14 @@ class Info extends CommandParser {
 	}
 
 	action() {
-		const url = `${this.config.url}/api/now/table/sys_properties?sysparm_query=name%3Dglide.war`;
-		const options = {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Basic ${this.config.auth.key}`
-			}
-		};
-
 		const spinner = ora('Retrieving instance info...').start();
 
-		fetch(url, options)
-			.then(stream => stream.json())
+		get('/table/sys_properties?sysparm_query=name%3Dglide.war')
 			.then((response) => {
 				const { result } = response;
 
 				this.printInfo({
-					version: this.cleanVersion(result[0].value)
+					version: this.formatVersion(result[0].value)
 				});
 
 				spinner.stop();
@@ -43,7 +33,7 @@ class Info extends CommandParser {
 			});
 	}
 
-	cleanVersion(rawVersionStr) {
+	formatVersion(rawVersionStr) {
 		const pathObj = path.parse(rawVersionStr);
 		const versionName = pathObj.name;
 
@@ -60,7 +50,7 @@ class Info extends CommandParser {
 		const { url } = this.config;
 		const infoStr = `
 
-Instance Info
+Instance info
 =============
 URL:         ${url}
 Version:     ${version}

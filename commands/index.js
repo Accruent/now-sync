@@ -10,7 +10,7 @@ const watch = require('./watch');
 
 module.exports = {
 	config: {
-		description: 'Initiates config for current folder (instance url, auth type, etc.)',
+		description: 'Initiates config for current folder (run this first)',
 		command: config
 	},
 	create: {
@@ -22,7 +22,7 @@ module.exports = {
 		command: del
 	},
 	info: {
-		description: 'Lists information about ServiceNow instance (url, version, etc.)',
+		description: 'Lists information about ServiceNow instance',
 		command: info
 	},
 	list: {

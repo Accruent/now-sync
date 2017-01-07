@@ -1,5 +1,4 @@
 const chalk = require('chalk');
-const yaml = require('js-yaml');
 const { configFileName } = require('../constants');
 const parseConfigFile = require('../util/parse-config-file');
 
@@ -26,7 +25,7 @@ module.exports = class CommandParser {
 				return;
 			}
 
-			this.config = yaml.safeLoad(configFileContents);
+			this.config = configFileContents;
 
 			this.action();
 		} else {
