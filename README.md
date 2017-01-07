@@ -16,7 +16,7 @@ Commands:
   config                    Initiates config for current folder (instance url, auth type, etc.)
   create                    Create a record on ServiceNow and sync it with its local file in project folder.
   delete [path]             Removes file from ServiceNow and project folder
-  info                      Lists information about ServiceNow instance (url, version, etc.)
+  info                      Lists information about ServiceNow instance
   list [record type]        Lists all records of a record type sync’d in project folder with ServiceNow
   pull [record type]        Pull all sync’d files to project folder from ServiceNow
   push                      Push all files in project folder to ServiceNow

@@ -1,7 +1,7 @@
-const { promisifyAll } = require('bluebird');
 const chalk = require('chalk');
-const fs = promisifyAll(require('fs'));
-const { configFileName, configFilePath } = require('../constants');
+const yaml = require('js-yaml');
+const { configFileName } = require('../constants');
+const parseConfigFile = require('../util/parse-config-file');
 
 module.exports = class CommandParser {
 	constructor(args) {
@@ -9,6 +9,7 @@ module.exports = class CommandParser {
 
 		this.action = this.action.bind(this);
 		this.requiresConfigFile = false;
+		this.config = null;
 	}
 
 	action() {
@@ -17,20 +18,19 @@ module.exports = class CommandParser {
 
 	runAction() {
 		if (this.requiresConfigFile) {
-			this.hasConfigFile()
-				.then(() => {
-					this.action();
-				})
-				.catch(() => {
-					const errorMsg = chalk.bold.red(`${configFileName} not found. Run \`now config\` first.`);
-					console.error(errorMsg); // eslint-disable-line no-console
-				});
+			const configFileContents = parseConfigFile();
+
+			if (!configFileContents) {
+				const errorMsg = chalk.bold.red(`${configFileName} does not exist or is not readable. Run \`now config\` first.`);
+				console.error(errorMsg); // eslint-disable-line no-console
+				return;
+			}
+
+			this.config = yaml.safeLoad(configFileContents);
+
+			this.action();
 		} else {
 			this.action();
 		}
-	}
-
-	hasConfigFile() {
-		return fs.accessAsync(configFilePath, fs.constants.R_OK);
 	}
 };
