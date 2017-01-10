@@ -24,6 +24,7 @@ Commands:
   push [record type]        Push all files of a record type to ServiceNow
   sync [record type]        Select which records of a record type to sync with ServiceNow
   watch                     Watches project folder files for changes and pushes changes to ServiceNow
+  bug                       Report a bug
 
 Record types:
 
