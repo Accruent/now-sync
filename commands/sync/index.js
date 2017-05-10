@@ -1,8 +1,16 @@
+const ora = require('ora');
 const CommandParser = require('../command-parser');
 
 module.exports =
 class Sync extends CommandParser {
+	constructor(args) {
+		super(args);
+
+		this.requiresConfigFile = true;
+	}
+
 	action() {
-		console.log('Sync', this.args);
+		const spinner = ora('Retrieving records...').start();
+		spinner.stop();
 	}
 };

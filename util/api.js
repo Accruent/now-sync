@@ -5,10 +5,12 @@ const parseConfigFile = require('./parse-config-file');
 const { url, auth } = parseConfigFile();
 const baseOptions = {
 	headers: {
-		'Content-Type': 'application/json',
-		Authorization: `Basic ${auth.key}`
+		'Content-Type': 'application/json'
 	}
 };
+if (auth) {
+	baseOptions.headers.Authorization = `Basic ${auth.key}`;
+}
 
 function get(endpoint) {
 	const formattedEndpoint = formatEndpoint(endpoint);
