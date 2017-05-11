@@ -1,6 +1,6 @@
-# NOW Sync
+# NOW-sync
 
-A tool to help developers sync their JavaScript resources with ServiceNow.
+A tool to help developers sync local files to ServiceNow record fields. Requires [NodeJS](https://nodejs.org).
 
 ```shell
 yarn global add now-sync # or `npm install -g now-sync`
@@ -8,28 +8,26 @@ yarn global add now-sync # or `npm install -g now-sync`
 
 ## Commands
 
-```
+```text
 Usage: now [command]
 
-Commands:
 
-  config                    Initiates config for current folder (instance url, auth type, etc.)
-  create                    Create a record on ServiceNow and sync it with its local file in project folder.
-  delete [path]             Removes file from ServiceNow and project folder
-  info                      Lists information about ServiceNow instance
-  list [record type]        Lists all records of a record type sync’d in project folder with ServiceNow
-  pull [record type]        Pull all sync’d files to project folder from ServiceNow
-  push                      Push all files in project folder to ServiceNow
-  push [path]               Push specific file in project folder to ServiceNow
-  push [record type]        Push all files of a record type to ServiceNow
-  sync [record type]        Select which records of a record type to sync with ServiceNow
-  watch                     Watches project folder files for changes and pushes changes to ServiceNow
-  bug                       Report a bug
+  Commands:
 
-Record types:
+    config      Initiates config for current folder (run this first)
+    info        Lists information about ServiceNow instance
+    add:table   Add a new table configuration to sync with local files
+    add         Add local files to sync with a ServiceNow record
+    sync        Perform a one-time sync on all local files with ServiceNow records
+    watch       Watches project folder files for changes and pushes changes to ServiceNow
 
-  ui-page
-  ui-script
-  ui-macro
-  script-include
+  Options:
+
+    -h, --help     output usage information
+    -V, --version  output the version number
 ```
+
+## Quick Start
+
+1. After installing, run `now config` to configure your local environment.
+1. Test your configuration by running `now info`.

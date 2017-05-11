@@ -1,9 +1,19 @@
+plugins:
+  - jest
 env:
   es6: true
   node: true
+  jest/globals: true
 extends: 'airbnb-base'
 rules:
   arrow-body-style:
+    - error
+    - as-needed
+  array-bracket-spacing:
+    - error
+    - never
+    - arraysInArrays: true
+  arrow-parens:
     - error
     - as-needed
   class-methods-use-this: off
@@ -16,7 +26,7 @@ rules:
     - warn
   indent:
     - error
-    - tab
+    - 2
   key-spacing:
     - error
     - mode: minimum

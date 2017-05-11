@@ -1,33 +1,44 @@
 const fetch = require('node-fetch');
-const cloneDeep = require('lodash/cloneDeep');
-const parseConfigFile = require('./parse-config-file');
+const merge = require('lodash/merge');
+const { parseConfigFile } = require('./config');
 
-const { url, auth } = parseConfigFile();
-const baseOptions = {
-	headers: {
-		'Content-Type': 'application/json'
-	}
-};
-if (auth) {
-	baseOptions.headers.Authorization = `Basic ${auth.key}`;
+function generateBaseOptions() {
+  const auth = parseConfigFile(true);
+  const baseOptions = {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+  if (auth) {
+    baseOptions.headers.Authorization = `Basic ${auth.key}`;
+  }
+
+  return baseOptions;
 }
 
-function get(endpoint) {
-	const formattedEndpoint = formatEndpoint(endpoint);
+function get(url, opts) {
+  const options = merge({}, generateBaseOptions(), opts);
+  options.method = 'GET';
 
-	const options = cloneDeep(baseOptions);
-	options.method = 'GET';
+  if (typeof fetch === 'function') {
+    return fetch(url, options)
+      .then( stream => stream.json() );
+  }
 
-	return fetch(`${url}/api/now/v1/${formattedEndpoint}`, options)
-		.then( stream => stream.json() );
+  throw new Error('fetch isn’t a function?!');
 }
 exports.get = get;
 
-//////
+function put(url, opts) {
+  const options = merge({}, generateBaseOptions(), opts);
+  options.method = 'PUT';
 
-function formatEndpoint(rawEndpoint) {
-	if (rawEndpoint.indexOf('/') === 0) {
-		return rawEndpoint.substr(1);
-	}
-	return rawEndpoint;
+  if (typeof fetch === 'function') {
+    return fetch(url, options)
+      .then( stream => stream.json() );
+  }
+
+  throw new Error('fetch isn’t a function?!');
 }
+exports.put = put;
+
