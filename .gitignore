@@ -34,3 +34,4 @@ node_modules/
 # Environment
 .vscode/
 *.log
+coverage/

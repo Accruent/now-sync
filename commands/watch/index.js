@@ -1,8 +1,15 @@
 const CommandParser = require('../command-parser');
+const { watch } = require('../../util/watch');
 
 module.exports =
 class Watch extends CommandParser {
-	action() {
-		console.log('Watch', this.args);
-	}
+  constructor(args) {
+    super(args);
+
+    this.requiresConfigFile = true;
+  }
+
+  action() {
+    watch();
+  }
 };
