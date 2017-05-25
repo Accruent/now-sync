@@ -1,7 +1,7 @@
-const path = require('path');
-const yeoman = require('yeoman-environment');
-
+const inquirer = require('inquirer');
 const CommandParser = require('../command-parser');
+const { parseConfigFile } = require('../../util/config');
+const { generateFilesToWriteForRecord, getFieldValues, writeFilesForTable } = require('../../util/add');
 
 module.exports =
 class Create extends CommandParser {
@@ -12,9 +12,39 @@ class Create extends CommandParser {
   }
 
   action() {
-    const yeomanEnv = yeoman.createEnv();
-    const gen = yeomanEnv.getByPath( path.resolve(__dirname, 'add-generator.js') );
+    const questions = [
+      {
+        name: 'table',
+        type: 'input',
+        message: 'Table (API) name?',
+        store: true,
+        validate: answer => !!answer
+      },
+      {
+        name: 'sysId',
+        type: 'input',
+        message: 'Record sys_id?',
+        validate: answer => !!answer
+      }
+    ];
 
-    yeomanEnv.run([gen.namespace], {}, () => {});
+    inquirer.prompt(questions).then(answers => {
+      const { sysId, table } = answers;
+      const config = parseConfigFile();
+      const tableConfig = config.config[table];
+
+      if (!tableConfig) {
+        throw new Error(`Configuration for table \`${table}\` not found. Run \`now add:table\` to configure files for this table.`);
+      }
+
+      return getFieldValues(table, sysId)
+        .then(data => {
+          const filesToWrite = generateFilesToWriteForRecord(table, data);
+          writeFilesForTable(table, filesToWrite);
+        })
+        .catch(err => {
+          throw err;
+        });
+    });
   }
 };

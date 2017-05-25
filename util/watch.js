@@ -6,7 +6,7 @@ const Promise = require('bluebird');
 
 const { getFieldValuesFromFileName } = require('./file-naming');
 const { parseConfigFile, saveConfigFile } = require('./config');
-const { updateRecord } = require('./sync');
+const { updateRecord } = require('./service-now');
 
 const readFileAsync = Promise.promisify(fs.readFile);
 

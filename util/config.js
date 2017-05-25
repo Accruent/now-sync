@@ -77,6 +77,6 @@ function saveConfigFile(configJson, isAuth) {
   const configFilePath = (isAuth) ? AUTH_FILE_PATH : CONFIG_FILE_PATH;
 
   fs.writeFileSync(configFilePath, yaml.safeDump(configJson));
-  console.log(`Created \`${configFilePath}\``); // eslint-disable-line no-console
+  console.log(`Created/updated \`${configFilePath}\``); // eslint-disable-line no-console
 }
 exports.saveConfigFile = saveConfigFile;

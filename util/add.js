@@ -5,9 +5,10 @@ const path = require('path');
 const Promise = require('bluebird');
 const { parseConfigFile, saveConfigFile } = require('./config');
 const { compileFileName, getFileNameFields, trimCwd } = require('./file-naming');
-const { getRecord } = require('./service-now');
+const { convertServiceNowDatetimeToMoment, getRecord } = require('./service-now');
 
-const writeFileAsync = Promise.promisify( fs.writeFile );
+const writeFileAsync = Promise.promisify(fs.writeFile);
+const utimesAsync = Promise.promisify(fs.utimes);
 
 /**
  * Creates an array of file data for a ServiceNow record.
@@ -28,7 +29,8 @@ function generateFilesToWriteForRecord(table, fieldValues) {
   return _.map(config.config[table].formats, ({ fileName: fileTemplate, contentField }) => ({
     contentField,
     fileName: compileFileName(fileTemplate, fieldValues),
-    fileContent: fieldValues[contentField]
+    fileContent: fieldValues[contentField],
+    fileMtime: convertServiceNowDatetimeToMoment(fieldValues.sys_updated_on).unix()
   }));
 }
 exports.generateFilesToWriteForRecord = generateFilesToWriteForRecord;
@@ -46,6 +48,8 @@ function getFieldsToRetrieve(table) {
     config.config[table].formats,
     ({ contentField }) => contentField
   );
+
+  recordFields.push('sys_updated_on');
 
   return _.uniq( recordFields.concat(contentFields) );
 }
@@ -100,13 +104,15 @@ function writeFilesForTable(table, filesToWrite) {
     mkdirp.sync(writePath);
   }
 
-  _.forEach(filesToWrite, ({ contentField, fileName, fileContent }) => {
+  _.forEach(filesToWrite, ({ contentField, fileName, fileContent, fileMtime }) => {
     const filePath = path.resolve(writePath, fileName);
 
     writeFilePromises.push(
-      writeFileAsync(filePath, fileContent).then(() => {
-        console.log(`${trimCwd(filePath)} created.`); // eslint-disable-line no-console
-      })
+      writeFileAsync(filePath, fileContent)
+        .then(() => utimesAsync(filePath, fileMtime, fileMtime))
+        .then(() => {
+          console.log(`${trimCwd(filePath)} created.`); // eslint-disable-line no-console
+        })
     );
 
     const recordConfigAlreadyExists = _.find(

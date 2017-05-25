@@ -8,13 +8,11 @@ const { getFieldValuesFromFileName, getFileNameFields, trimCwd } = require('./fi
 const { generateFilesToWriteForRecord, getFieldsToRetrieve, writeFilesForTable } = require('./add');
 const { parseConfigFile } = require('./config');
 const { get } = require('./api');
-const { buildTableApiUrl } = require('./service-now');
+const { buildTableApiUrl, convertServiceNowDatetimeToMoment, updateRecord } = require('./service-now');
 
 const readFileAsync = Promise.promisify(fs.readFile);
 const writeFileAsync = Promise.promisify(fs.writeFile);
 const statAsync = Promise.promisify(fs.stat);
-
-const { convertServiceNowDatetimeToMoment, updateRecord } = require('./service-now');
 
 /**
  * Returns a promise resolving to all local file stats and file sysIds
