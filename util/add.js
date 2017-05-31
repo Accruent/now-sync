@@ -69,6 +69,10 @@ function getFieldValues(table, sysId) {
       return 'sys_scope.scope';
     }
 
+    if (name === 'web_service_definition') {
+      return 'web_service_definition.service_id';
+    }
+
     return name;
   });
 
@@ -76,6 +80,11 @@ function getFieldValues(table, sysId) {
     if (record['sys_scope.scope']) {
       record.sys_scope = record['sys_scope.scope'];
       delete record['sys_scope.scope'];
+    }
+
+    if (record['web_service_definition.service_id']) {
+      record.web_service_definition = record['web_service_definition.service_id'];
+      delete record['web_service_definition.service_id'];
     }
 
     return record;

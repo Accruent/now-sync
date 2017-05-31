@@ -31,6 +31,13 @@ config:
     formats:
       - fileName: ':collection-:sys-scope-:name-script-:sys_id.js'
         contentField: script
+  sys_ws_operation:
+    nameField:
+      - web_service_definition
+      - name
+    formats:
+      - fileName: ':web_service_definition-:name-operation_script-:sys_id.js'
+        contentField: operation_script
 filePath: ./now
 records:
   catalog_script_client: []
