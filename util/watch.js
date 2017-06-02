@@ -23,7 +23,8 @@ function watch() {
   const dir = path.resolve(process.cwd(), config.filePath);
 
   const watcher = chokidar.watch(dir, {
-    awaitWriteFinish: true
+    awaitWriteFinish: true,
+    ignored: /(^|[/\\])\../ // dotfiles
   });
 
   watcher.on('ready', () => {
