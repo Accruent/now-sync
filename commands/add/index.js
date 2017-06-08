@@ -11,7 +11,7 @@ class Create extends CommandParser {
     this.requiresConfigFile = true;
   }
 
-  action() {
+  async action() {
     const questions = [
       {
         name: 'table',
@@ -28,23 +28,17 @@ class Create extends CommandParser {
       }
     ];
 
-    inquirer.prompt(questions).then(answers => {
-      const { sysId, table } = answers;
-      const config = parseConfigFile();
-      const tableConfig = config.config[table];
+    const { sysId, table } = await inquirer.prompt(questions);
 
-      if (!tableConfig) {
-        throw new Error(`Configuration for table \`${table}\` not found. Run \`now add:table\` to configure files for this table.`);
-      }
+    const config = parseConfigFile();
+    const tableConfig = config.config[table];
 
-      return getFieldValues(table, sysId)
-        .then(data => {
-          const filesToWrite = generateFilesToWriteForRecord(table, data);
-          writeFilesForTable(table, filesToWrite);
-        })
-        .catch(err => {
-          throw err;
-        });
-    });
+    if (!tableConfig) {
+      throw new Error(`Configuration for table \`${table}\` not found. Run \`now add:table\` to configure files for this table.`);
+    }
+
+    const data = await getFieldValues(table, sysId);
+    const filesToWrite = generateFilesToWriteForRecord(table, data);
+    return writeFilesForTable(table, filesToWrite);
   }
 };

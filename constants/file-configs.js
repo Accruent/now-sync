@@ -79,10 +79,10 @@ exports.sp_widget = {
 
 // Business Rules
 exports.sys_script = {
-  nameField: ['collection', 'sys_scope', 'name'],
+  nameField: ['collection', 'name'],
   formats: [
     {
-      fileName: ':collection-:sys-scope-:name-script-:sys_id.js', contentField: 'script'
+      fileName: ':collection-:name-script-:sys_id.js', contentField: 'script'
     }
   ]
 };
