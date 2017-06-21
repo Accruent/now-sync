@@ -112,6 +112,9 @@ function writeFilesForTable(table, filesToWrite) {
   if (!fs.existsSync(writePath)) {
     mkdirp.sync(writePath);
   }
+  if (!config.records[table]) {
+    config.records[table] = [];
+  }
 
   _.forEach(filesToWrite, ({ contentField, fileName, fileContent, fileMtime }) => {
     const filePath = path.resolve(writePath, fileName);
@@ -135,9 +138,9 @@ function writeFilesForTable(table, filesToWrite) {
         fileName
       });
     }
-
-    saveConfigFile(config);
-    return Promise.all(writeFilePromises);
   });
+
+  saveConfigFile(config);
+  return Promise.all(writeFilePromises);
 }
 exports.writeFilesForTable = writeFilesForTable;

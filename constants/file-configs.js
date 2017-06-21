@@ -152,3 +152,14 @@ exports.sys_ws_operation = {
     }
   ]
 };
+
+// Scheduled Jobs
+exports.sysauto_script = {
+  nameField: ['sys_scope', 'name'],
+  formats: [
+    {
+      fileName: ':sys_scope-:name-script-:sys_id.js',
+      contentField: 'script'
+    }
+  ]
+};

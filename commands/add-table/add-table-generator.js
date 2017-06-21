@@ -1,9 +1,7 @@
 // const Promise = require('bluebird');
 const Generator = require('yeoman-generator');
 const inquirer = require('inquirer');
-const forEach = require('lodash/forEach');
-const isUndefined = require('lodash/isUndefined');
-const map = require('lodash/map');
+const _ = require('lodash');
 const Rx = require('rx');
 const { parseConfigFile, saveConfigFile } = require('../../util/config');
 
@@ -30,8 +28,8 @@ class ConfigGenerator extends Generator {
         // answer and add additional questions to
         // gather the file extension for each file type.
         if (name === 'fileFields') {
-          this.fileFieldNames = map(answer.split(','), fileField => fileField.trim());
-          forEach(this.fileFieldNames, fieldName => {
+          this.fileFieldNames = _.map(answer.split(','), fileField => fileField.trim());
+          _.forEach(this.fileFieldNames, fieldName => {
             questions.onNext({
               name: `extensions.${fieldName}`,
               type: 'input',
@@ -79,7 +77,7 @@ class ConfigGenerator extends Generator {
       type: 'input',
       message: 'Field name(s) to save as files? (Use commas[,] to separate field names)',
       validate: answer => !!answer,
-      when: answers => isUndefined(answers.confirmTable) || answers.confirmTable
+      when: answers => _.isUndefined(answers.confirmTable) || answers.confirmTable
     });
   }
 
@@ -87,7 +85,7 @@ class ConfigGenerator extends Generator {
     const { extensions, nameField, table } = this.savedAnswers;
     const { fileFieldNames } = this;
 
-    const formattedNameFields = map(nameField.split(','), name =>
+    const formattedNameFields = _.map(nameField.split(','), name =>
       name.trim()
     );
 
@@ -95,10 +93,13 @@ class ConfigGenerator extends Generator {
       nameField: formattedNameFields,
       formats: []
     };
+    config.records[table] = [];
 
-    forEach(fileFieldNames, field => {
+    const filenamePrefix = _.map(formattedNameFields, name => `:${name}`).join('-');
+
+    _.forEach(fileFieldNames, field => {
       config.config[table].formats.push({
-        fileName: `:${nameField}-${field}-:sys_id.${extensions[field]}`,
+        fileName: `${filenamePrefix}-${field}-:sys_id.${extensions[field]}`,
         contentField: field
       });
     });
