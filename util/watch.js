@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const chalk = require('chalk');
 const chokidar = require('chokidar');
 const fs = require('fs');
 const path = require('path');
@@ -46,9 +47,16 @@ function watch() {
     const table = relativePath[0];
     const file = relativePath[1];
 
-    const { contentField } = _.find(config.records[table], record =>
+    const fileConfig = _.find(config.records[table], record =>
       record.fileName === file
     );
+    if (!fileConfig) {
+      console.error(chalk.red(`Could not find a file configuration matching table record on ${table}: ${file}. Make sure that configuration exists in your .now-sync.yml file. If it does not exist, run \`now add\` to add the file configuration.`)); // eslint-disable-line no-console
+
+      return;
+    }
+
+    const { contentField } = fileConfig;
     const { fileName: fileTemplate } = _.find(config.config[table].formats, format =>
       format.contentField === contentField
     );
