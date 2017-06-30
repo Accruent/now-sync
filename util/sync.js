@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
 const moment = require('moment');
+const { promisify } = require('util');
 const Promise = require('bluebird');
 
 const { getFieldValuesFromFileName, getFileNameFields, trimCwd } = require('./file-naming');
@@ -10,9 +11,9 @@ const { parseConfigFile } = require('./config');
 const { get } = require('./api');
 const { buildTableApiUrl, convertServiceNowDatetimeToMoment, updateRecord } = require('./service-now');
 
-const readFileAsync = Promise.promisify(fs.readFile);
-const writeFileAsync = Promise.promisify(fs.writeFile);
-const statAsync = Promise.promisify(fs.stat);
+const readFileAsync = promisify(fs.readFile);
+const writeFileAsync = promisify(fs.writeFile);
+const statAsync = promisify(fs.stat);
 
 /**
  * Returns a promise resolving to all local file stats and file sysIds
@@ -175,9 +176,13 @@ function initSyncAllFilesForTable(table) {
 
       return getSyncedRecordsForTable(table, _.uniq(sysIds));
     })
-    .then(apiRecords =>
-      syncAllFilesForTable(table, apiRecords, savedFileStatsBySysIdByPath)
-    );
+    .then(apiRecords => {
+      if (!apiRecords) {
+        throw new Error(`The records for table \`${table}\` in the ServiceNow instance do not exist.`);
+      }
+
+      return syncAllFilesForTable(table, apiRecords, savedFileStatsBySysIdByPath);
+    });
 }
 exports.initSyncAllFilesForTable = initSyncAllFilesForTable;
 
@@ -192,7 +197,10 @@ exports.initSyncAllFilesForTable = initSyncAllFilesForTable;
 function syncAllFilesForTable(table, apiRecords, fileStatsBySysIdByPath) {
   return Promise.map(apiRecords, record =>
     syncRecord(table, record, fileStatsBySysIdByPath[record.sys_id])
-  );
+  )
+    .catch( err => {
+      throw err;
+    });
 }
 exports.syncAllFilesForTable = syncAllFilesForTable;
 

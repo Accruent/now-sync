@@ -138,7 +138,7 @@ exports.getRecord = getRecord;
  * @param {object} body An object containing field:value hashes
  * @returns {promise} The promise of the API call
  */
-function updateRecord(table, sysId, body) {
+async function updateRecord(table, sysId, body) {
   const url = `${buildTableApiBaseUrl(table)}/${sysId}`;
   const filteredBody = _.omit(body, ['sys_id']);
 
@@ -146,11 +146,12 @@ function updateRecord(table, sysId, body) {
     body: JSON.stringify(filteredBody)
   };
 
-  return put(url, opts)
-    .then(() => {
-      console.log( // eslint-disable-line no-console
-        `Updated ServiceNow record: ${table}/${sysId} with fields: ${_.keys(filteredBody).join(', ')}`
-      );
-    });
+  const call = await put(url, opts);
+
+  console.log( // eslint-disable-line no-console
+    `Updated ServiceNow record: ${table}/${sysId} with fields: ${_.keys(filteredBody).join(', ')}`
+  );
+
+  return call;
 }
 exports.updateRecord = updateRecord;
