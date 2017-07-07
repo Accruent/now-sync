@@ -127,6 +127,10 @@ exports.sys_ui_page = {
     {
       fileName: ':sys_scope-:name-html-:sys_id.html',
       contentField: 'html'
+    },
+    {
+      fileName: ':sys_scope-:name-client_script-:sys_id.js',
+      contentField: 'client_script'
     }
   ]
 };
