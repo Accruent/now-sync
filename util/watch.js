@@ -86,10 +86,13 @@ function watch() {
     const configRecordIndex = _.findIndex(configRecords, record =>
       record.fileName === file
     );
-    configRecords.splice(configRecordIndex, 1);
 
-    saveConfigFile(config);
-    console.log(`Removed "${table}/${file}" from now-sync config.`); // eslint-disable-line no-console
+    if (configRecordIndex > -1) {
+      configRecords.splice(configRecordIndex, 1);
+
+      saveConfigFile(config);
+      console.log(`Removed "${table}/${file}" from now-sync config.`); // eslint-disable-line no-console
+    }
   });
 
   return watcher;
