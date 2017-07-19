@@ -118,9 +118,13 @@ function writeFilesForTable(table, filesToWrite) {
 
   _.forEach(filesToWrite, ({ contentField, fileName, fileContent, fileMtime }) => {
     const filePath = path.resolve(writePath, fileName);
+    const formattedFileContent = fileContent.replace(
+      new RegExp('\r\n', 'g'), // eslint-disable-line no-control-regex
+      '\n'
+    );
 
     writeFilePromises.push(
-      writeFileAsync(filePath, fileContent)
+      writeFileAsync(filePath, formattedFileContent)
         .then(() => utimesAsync(filePath, fileMtime, fileMtime))
         .then(() => {
           console.log(`${trimCwd(filePath)} created.`); // eslint-disable-line no-console
