@@ -44,6 +44,8 @@ rules:
   no-param-reassign:
     - error
     - props: false
+  no-plusplus:
+    - 0
   no-restricted-syntax:
     - warn
   no-tabs:
@@ -64,6 +66,8 @@ rules:
     - warn
   object-curly-spacing:
     - warn
+  padded-blocks:
+    - 0
   prefer-const:
     - error
   prefer-template:
