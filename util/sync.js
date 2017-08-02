@@ -9,7 +9,12 @@ const { getFieldValuesFromFileName, getFileNameFields, trimCwd } = require('./fi
 const { generateFilesToWriteForRecord, getFieldsToRetrieve, writeFilesForTable } = require('./add');
 const { parseConfigFile } = require('./config');
 const { get } = require('./api');
-const { buildTableApiUrl, convertServiceNowDatetimeToMoment, updateRecord } = require('./service-now');
+const {
+  buildTableApiUrl,
+  convertServiceNowDatetimeToMoment,
+  getRecord,
+  updateRecord
+} = require('./service-now');
 
 const readFileAsync = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
@@ -78,7 +83,8 @@ exports.getSyncedFileStatsForTable = getSyncedFileStatsForTable;
 /**
  * Filters out all tables that aren’t synced to local files.
  *
- * @returns {object} The new records configuration object
+ * @returns {object.<string, {contentField: string, fileName: string}[]>}
+ * The new records configuration object in a table: record config array hash
  */
 function getRecordsToSync() {
   const { records } = parseConfigFile();
@@ -266,19 +272,19 @@ exports.calculateSyncRecordData = calculateSyncRecordData;
  * @param {string} fileStatsByPaths.stats The fsStats object for the filePath
  *
  * @example
- * syncFile({
- *   recordData: {
+ * syncRecord(
+ *   'sys_ui_page',
+ *   {
  *     sys_id: '0181f08913ea7a00ca1e70a76144b0a3',
  *     html: '<some_field_content></some_field_content>',
  *     sys_updated_on: '2017-01-01 12:00:00'
  *   },
- *   fileStatsByPaths: {
+ *   {
  *     './now/sys_ui_page/example_ui_page-html-0181f08913ea7a00ca1e70a76144b0a3.html': {
  *       field: 'html',
  *       stats: { mtime: 'Tue May 16 2017 15:36:45 GMT-0500 (CDT)' } // an fs.Stats object
  *     }
- *   },
- *   table: 'sys_ui_page'
+ *   }
  * })
  * @returns {promise}
  */
@@ -310,3 +316,91 @@ function syncRecord(table, recordData, fileStatsByPaths) {
   });
 }
 exports.syncRecord = syncRecord;
+
+function pull() {
+  const { config } = parseConfigFile();
+  const recordsByTable = getRecordsToSync();
+
+  const tableNames = _.keys(recordsByTable);
+  const getRecordPromises = [];
+  const recordsToPullByTable = {};
+  let i;
+
+  // prepping data to gather
+  for (i = 0; i < tableNames.length; i++) {
+    const table = tableNames[i];
+    const tableRecords = recordsByTable[table];
+    const tableFileFormats = config[table].formats;
+
+    if (!recordsToPullByTable[table]) {
+      recordsToPullByTable[table] = [];
+    }
+
+    const tableRecordsToPull = recordsToPullByTable[table];
+
+    let j;
+    for (j = 0; j < tableRecords.length; j++) {
+      const { contentField, fileName } = tableRecords[j];
+      const { fileName: fileTemplate } = _.find(
+        tableFileFormats,
+        format => format.contentField === contentField
+      );
+      const fieldValues = getFieldValuesFromFileName(fileName, fileTemplate);
+
+      tableRecordsToPull.push(fieldValues.sys_id);
+    }
+  }
+
+  // getting record data
+  for (i = 0; i < tableNames.length; i++) {
+    const table = tableNames[i];
+    const tableRecordsToPull = recordsToPullByTable[table];
+
+    let j;
+    for (j = 0; j < tableRecordsToPull.length; j++) {
+      const sysId = tableRecordsToPull[j];
+
+      getRecordPromises.push(
+        getRecord(table, sysId, getFieldsToRetrieve(table))
+          .then(recordData => {
+            // write files
+            const filesToWrite = generateFilesToWriteForRecord(table, recordData);
+            return writeFilesForTable(table, filesToWrite);
+          })
+      );
+    }
+  }
+
+  return Promise.all(getRecordPromises);
+}
+exports.pull = pull;
+
+/**
+ * Copies content of all local synced files to their respective ServiceNow records.
+ *
+ * @returns {promise<object[]>} The JSON responses of the update calls
+ */
+async function push() {
+  const tableNames = _.keys(getRecordsToSync());
+  const syncedFileStats = await Promise.map(tableNames, table => getSyncedFileStatsForTable(table));
+
+  return Promise.map(tableNames, (table, i) => {
+    const { fileStatsBySysIdByPath } = syncedFileStats[i];
+    const sysIds = _.keys(fileStatsBySysIdByPath);
+
+    return Promise.map(sysIds, sysId => {
+      const fileStatsByPath = fileStatsBySysIdByPath[sysId];
+      const updateRecordData = {};
+
+      return Promise.map(_.keys(fileStatsByPath), filePath =>
+        readFileAsync(filePath, 'utf8').then(fileContent => {
+          updateRecordData[fileStatsByPath[filePath].field] = fileContent;
+        })
+      ).then(() => updateRecord(table, sysId, updateRecordData));
+    });
+  })
+  .catch(e => {
+    throw e;
+  });
+}
+exports.push = push;

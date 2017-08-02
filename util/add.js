@@ -51,7 +51,18 @@ function getFieldsToRetrieve(table) {
 
   recordFields.push('sys_updated_on');
 
-  return _.uniq( recordFields.concat(contentFields) );
+  const fieldsToRetrieve = _.uniq( recordFields.concat(contentFields) );
+  return _.map(fieldsToRetrieve, name => {
+    if (name === 'sys_scope') {
+      return 'sys_scope.scope';
+    }
+
+    if (name === 'web_service_definition') {
+      return 'web_service_definition.service_id';
+    }
+
+    return name;
+  });
 }
 exports.getFieldsToRetrieve = getFieldsToRetrieve;
 
@@ -63,32 +74,9 @@ exports.getFieldsToRetrieve = getFieldsToRetrieve;
  * @returns {promise} Promise resolving to an object with the ServiceNow record’s field values
  */
 function getFieldValues(table, sysId) {
-  let fieldsToRetrieve = getFieldsToRetrieve(table);
-  fieldsToRetrieve = _.map(fieldsToRetrieve, name => {
-    if (name === 'sys_scope') {
-      return 'sys_scope.scope';
-    }
+  const fieldsToRetrieve = getFieldsToRetrieve(table);
 
-    if (name === 'web_service_definition') {
-      return 'web_service_definition.service_id';
-    }
-
-    return name;
-  });
-
-  return getRecord(table, sysId, fieldsToRetrieve).then(record => {
-    if (record['sys_scope.scope']) {
-      record.sys_scope = record['sys_scope.scope'];
-      delete record['sys_scope.scope'];
-    }
-
-    if (record['web_service_definition.service_id']) {
-      record.web_service_definition = record['web_service_definition.service_id'];
-      delete record['web_service_definition.service_id'];
-    }
-
-    return record;
-  });
+  return getRecord(table, sysId, fieldsToRetrieve);
 }
 exports.getFieldValues = getFieldValues;
 

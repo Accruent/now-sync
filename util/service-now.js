@@ -126,7 +126,21 @@ function getRecord(table, sysId, fields) {
     displayValue: false
   })}`;
 
-  return get(url).then(response => response.result);
+  return get(url)
+    .then(response => response.result)
+    .then(record => {
+      if (record['sys_scope.scope']) {
+        record.sys_scope = record['sys_scope.scope'];
+        delete record['sys_scope.scope'];
+      }
+
+      if (record['web_service_definition.service_id']) {
+        record.web_service_definition = record['web_service_definition.service_id'];
+        delete record['web_service_definition.service_id'];
+      }
+
+      return record;
+    });
 }
 exports.getRecord = getRecord;
 

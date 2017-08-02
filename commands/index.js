@@ -4,8 +4,8 @@ const add = require('./add');
 // const del = require('./delete');
 const info = require('./info');
 // const list = require('./list');
-// // const pull = require('./pull');
-// const push = require('./push');
+const pull = require('./pull');
+const push = require('./push');
 const sync = require('./sync');
 const watch = require('./watch');
 
@@ -34,8 +34,16 @@ module.exports = {
     description: 'Add record files to sync with a ServiceNow record',
     command: add
   },
+  pull: {
+    description: 'Overwrites all local file content with synced ServiceNow record content',
+    command: pull
+  },
+  push: {
+    description: 'Overwrites all synced ServiceNow record fields with local file content',
+    command: push
+  },
   sync: {
-    description: 'Perform a one-time sync on local files with ServiceNow records',
+    description: '!DANGER! Perform a one-time sync on all synced local files with ServiceNow records',
     command: sync
   },
   watch: {
