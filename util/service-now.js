@@ -140,6 +140,9 @@ function getRecord(table, sysId, fields) {
       }
 
       return record;
+    })
+    .catch(e => {
+      throw new Error(`An error occurred when retrieving record information: ${table}.${sysId}.\n${e}`);
     });
 }
 exports.getRecord = getRecord;
