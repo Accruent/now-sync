@@ -9,6 +9,17 @@ exports.catalog_script_client = {
   ]
 };
 
+// CMS CSS
+exports.content_css = {
+  nameField: ['sys_scope', 'name'],
+  formats: [
+    {
+      fileName: ':sys_scope-:name-style-:sys_id.js',
+      contentField: 'style'
+    }
+  ]
+};
+
 // Service Portal CSS
 exports.sp_css = {
   nameField: ['sys_scope', 'name'],
