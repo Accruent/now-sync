@@ -1,9 +1,12 @@
 const ora = require('ora');
 const CommandParser = require('../command-parser');
-const { formatVersion, getInstanceVersion, printInfo } = require('../../util/info');
+const {
+  formatVersion,
+  getInstanceVersion,
+  printInfo
+} = require('../../util/info');
 
-module.exports =
-class Info extends CommandParser {
+module.exports = class Info extends CommandParser {
   constructor(args) {
     super(args);
 
@@ -12,12 +15,15 @@ class Info extends CommandParser {
 
   action() {
     const spinner = ora('Retrieving instance info...').start();
-    getInstanceVersion().then(({ version, latency }) => {
+    getInstanceVersion().then(response => {
+      if (response) {
+        const { version, latency } = response;
+        printInfo({
+          Version: formatVersion(version),
+          Latency: latency
+        });
+      }
       spinner.stop();
-      printInfo({
-        Version: formatVersion(version),
-        Latency: latency
-      });
     });
   }
 };
