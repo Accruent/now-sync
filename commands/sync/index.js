@@ -8,8 +8,7 @@ const {
   initSyncAllFilesForTable
 } = require('../../util/sync');
 
-module.exports =
-class Sync extends CommandParser {
+module.exports = class Sync extends CommandParser {
   constructor(args) {
     super(args);
 
@@ -21,9 +20,8 @@ class Sync extends CommandParser {
     const nonemptyRecords = getRecordsToSync();
     const nonemptyTables = _.keys(nonemptyRecords);
 
-    Promise.all(_.map(nonemptyTables, initSyncAllFilesForTable))
-      .then(() => {
-        spinner.stop();
-      });
+    Promise.all(_.map(nonemptyTables, initSyncAllFilesForTable)).then(() => {
+      spinner.stop();
+    });
   }
 };

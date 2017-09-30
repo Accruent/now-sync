@@ -14,7 +14,9 @@ function getInstanceVersion() {
   const { url } = parseConfigFile(true);
   const start = Date.now();
 
-  return get(`${url}/api/now/table/sys_properties?sysparm_query=name%3Dglide.war`)
+  return get(
+    `${url}/api/now/table/sys_properties?sysparm_query=name%3Dglide.war`
+  )
     .then(response => {
       if (response.status === 'failure' && response.error) {
         throw new Error(response.error.message);
@@ -47,10 +49,9 @@ function formatVersion(rawVersionStr) {
   const glideStr = 'glide-';
   const indexOfGlideStr = versionName.indexOf(glideStr);
 
-  return (indexOfGlideStr === 0) ?
-    versionName.substr(glideStr.length)
-    :
-    versionName;
+  return indexOfGlideStr === 0
+    ? versionName.substr(glideStr.length)
+    : versionName;
 }
 exports.formatVersion = formatVersion;
 

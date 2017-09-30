@@ -47,13 +47,11 @@ exports.generateAuthConfig = generateAuthConfig;
  * @returns {object} The config JSON object
  */
 function parseConfigFile(isAuth) {
-  const filePath = (isAuth) ? AUTH_FILE_PATH : CONFIG_FILE_PATH;
+  const filePath = isAuth ? AUTH_FILE_PATH : CONFIG_FILE_PATH;
   let config;
 
   try {
-    config = yaml.safeLoad(
-      fs.readFileSync(filePath, { encoding: 'utf8' })
-    );
+    config = yaml.safeLoad(fs.readFileSync(filePath, { encoding: 'utf8' }));
   } catch (err) {
     config = false;
   }
@@ -74,7 +72,7 @@ function saveConfigFile(configJson, isAuth) {
     throw new Error('Argument `configJson` not valid.');
   }
 
-  const configFilePath = (isAuth) ? AUTH_FILE_PATH : CONFIG_FILE_PATH;
+  const configFilePath = isAuth ? AUTH_FILE_PATH : CONFIG_FILE_PATH;
 
   fs.writeFileSync(configFilePath, yaml.safeDump(configJson));
   console.log(`Created/updated \`${configFilePath}\``); // eslint-disable-line no-console

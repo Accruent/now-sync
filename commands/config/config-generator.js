@@ -1,5 +1,9 @@
 const Generator = require('yeoman-generator');
-const { generateConfig, generateAuthConfig, saveConfigFile } = require('../../util/config');
+const {
+  generateConfig,
+  generateAuthConfig,
+  saveConfigFile
+} = require('../../util/config');
 
 class ConfigGenerator extends Generator {
   prompting() {
@@ -33,19 +37,13 @@ class ConfigGenerator extends Generator {
       }
     ];
 
-    return this.prompt(questions)
-      .then(answers => {
-        this.answers = answers;
-      });
+    return this.prompt(questions).then(answers => {
+      this.answers = answers;
+    });
   }
 
   configuring() {
-    const {
-      filePath,
-      instanceUrl,
-      username,
-      password
-    } = this.answers;
+    const { filePath, instanceUrl, username, password } = this.answers;
 
     saveConfigFile(generateConfig(filePath));
     saveConfigFile(generateAuthConfig(instanceUrl, username, password), true);

@@ -1,7 +1,6 @@
 const { compileFileName } = require('./file-naming');
 
 describe('util/file-naming', () => {
-
   describe('compileFileName()', () => {
     test('correctly compiles file name from correct data', () => {
       const fileTemplate = ':name-script-:sys_id.js';
@@ -12,7 +11,9 @@ describe('util/file-naming', () => {
         script: ''
       };
 
-      expect(compileFileName(fileTemplate, data)).toEqual('x_ctv_sc.common-script-f224f2a51322fa00ca1e70a76144b072.js');
+      expect(compileFileName(fileTemplate, data)).toEqual(
+        'x_ctv_sc.common-script-f224f2a51322fa00ca1e70a76144b072.js'
+      );
     });
 
     test('“-” in the record name is replaced with “^” in the file name', () => {
@@ -24,7 +25,9 @@ describe('util/file-naming', () => {
         script: ''
       };
 
-      expect(compileFileName(fileTemplate, data)).toEqual('x_ctv_dev.update^sets^release^tool-script-1d58db6213233a00ca1e70a76144b090.js');
+      expect(compileFileName(fileTemplate, data)).toEqual(
+        'x_ctv_dev.update^sets^release^tool-script-1d58db6213233a00ca1e70a76144b090.js'
+      );
     });
 
     test('“/” in the record name throws an error', () => {
@@ -46,6 +49,5 @@ describe('util/file-naming', () => {
 
       expect(errorThrown).toBe(true);
     });
-
   });
 });

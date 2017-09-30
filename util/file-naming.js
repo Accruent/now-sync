@@ -9,9 +9,7 @@ const replaceFileNameRe = [
 ];
 
 // characters found in the record name that will throw an error
-const errorFileNameRe = [
-  /\//g
-];
+const errorFileNameRe = [/\//g];
 
 /**
  * Compiles a now-sync file name using a given file template and record data.
@@ -32,7 +30,9 @@ function compileFileName(fileTemplate, data) {
     for (i = 0; i < errorFileNameRe.length; i++) {
       const errorFileNameReExec = errorFileNameRe[i].exec(tokenFromData);
       if (errorFileNameReExec) {
-        throw new Error(`Invalid character "${errorFileNameReExec[0]}" found in the record’s \`${token.name}\` field. Change your record’s \`${token.name}\` field value and try again.`);
+        throw new Error(
+          `Invalid character "${errorFileNameReExec[0]}" found in the record’s \`${token.name}\` field. Change your record’s \`${token.name}\` field value and try again.`
+        );
       }
     }
 
@@ -40,7 +40,10 @@ function compileFileName(fileTemplate, data) {
       const replaceChar = replaceFileNameRe[i];
 
       if (replaceChar.toReplace.test(tokenFromData)) {
-        tokenFromData = tokenFromData.replace(replaceChar.toReplace, replaceChar.replaceWith);
+        tokenFromData = tokenFromData.replace(
+          replaceChar.toReplace,
+          replaceChar.replaceWith
+        );
       }
     }
     return tokenFromData;
@@ -74,13 +77,17 @@ function getFileNameFields(table) {
   const tableConfig = config.config[table];
   const nameFields = tableConfig.nameField;
 
-  const formattedNameFields = (typeof nameFields === 'string') ? [nameFields] : [...nameFields];
-  const tableFileKeyObjs = _.flatten(_.map(tableConfig.formats, format =>
-    pathToRegexp(format.fileName, [], { delimiter: '-' }).keys
-  ));
+  const formattedNameFields =
+    typeof nameFields === 'string' ? [nameFields] : [...nameFields];
+  const tableFileKeyObjs = _.flatten(
+    _.map(
+      tableConfig.formats,
+      format => pathToRegexp(format.fileName, [], { delimiter: '-' }).keys
+    )
+  );
   const tableFileFields = _.map(tableFileKeyObjs, keyObj => keyObj.name);
 
-  return _.uniq( formattedNameFields.concat(tableFileFields) );
+  return _.uniq(formattedNameFields.concat(tableFileFields));
 }
 exports.getFileNameFields = getFileNameFields;
 
@@ -99,7 +106,9 @@ exports.getFileNameFields = getFileNameFields;
  */
 function getFieldValuesFromFileName(fileName, fileTemplate) {
   const templateKeys = [];
-  const templateTokens = pathToRegexp(fileTemplate, templateKeys, { delimiter: '-' });
+  const templateTokens = pathToRegexp(fileTemplate, templateKeys, {
+    delimiter: '-'
+  });
   const fieldValues = templateTokens.exec(fileName);
 
   fieldValues.shift(); // first element is just the file name
@@ -126,7 +135,9 @@ function trimCwd(filePath) {
   const cwd = process.cwd();
 
   if (filePath.indexOf(cwd) !== 0) {
-    throw new Error(`Incorrect usage of trimCwd; cwd "${cwd}" not found in filePath "${filePath}"`);
+    throw new Error(
+      `Incorrect usage of trimCwd; cwd "${cwd}" not found in filePath "${filePath}"`
+    );
   }
 
   return filePath.substr(cwd.length);

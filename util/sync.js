@@ -5,8 +5,16 @@ const moment = require('moment');
 const { promisify } = require('util');
 const Promise = require('bluebird');
 
-const { getFieldValuesFromFileName, getFileNameFields, trimCwd } = require('./file-naming');
-const { generateFilesToWriteForRecord, getFieldsToRetrieve, writeFilesForTable } = require('./add');
+const {
+  getFieldValuesFromFileName,
+  getFileNameFields,
+  trimCwd
+} = require('./file-naming');
+const {
+  generateFilesToWriteForRecord,
+  getFieldsToRetrieve,
+  writeFilesForTable
+} = require('./add');
 const { parseConfigFile } = require('./config');
 const { get } = require('./api');
 const {
@@ -40,10 +48,14 @@ function getSyncedFileStatsForTable(table) {
   // record:file relations as a one-to-many object.
   _.forEach(localRecords, record => {
     // aggregate all sys_ids for table for API call
-    const fileNameTemplate = _.find(tableConfig.formats, format =>
-      format.contentField === record.contentField
+    const fileNameTemplate = _.find(
+      tableConfig.formats,
+      format => format.contentField === record.contentField
     ).fileName;
-    const fileNameFieldValues = getFieldValuesFromFileName(record.fileName, fileNameTemplate);
+    const fileNameFieldValues = getFieldValuesFromFileName(
+      record.fileName,
+      fileNameTemplate
+    );
     const sysId = fileNameFieldValues.sys_id;
 
     // get stats for matching files
@@ -72,11 +84,10 @@ function getSyncedFileStatsForTable(table) {
     );
   });
 
-  return Promise.all(fsStatPromises)
-    .then(() => ({
-      fileStatsBySysIdByPath,
-      missingFieldsBySysId
-    }));
+  return Promise.all(fsStatPromises).then(() => ({
+    fileStatsBySysIdByPath,
+    missingFieldsBySysId
+  }));
 }
 exports.getSyncedFileStatsForTable = getSyncedFileStatsForTable;
 
@@ -147,12 +158,14 @@ exports.getSyncedRecordsForTable = getSyncedRecordsForTable;
  */
 function isFileNewerThanRecord(fileModifiedTime, sysUpdatedOn) {
   let mSysUpdatedOn = sysUpdatedOn;
-  if (!sysUpdatedOn._isAMomentObject) { // eslint-disable-line no-underscore-dangle
+  // eslint-disable-next-line no-underscore-dangle
+  if (!sysUpdatedOn._isAMomentObject) {
     mSysUpdatedOn = convertServiceNowDatetimeToMoment(sysUpdatedOn);
   }
 
   let mFileModifiedTime = fileModifiedTime;
-  if (!fileModifiedTime._isAMomentObject) { // eslint-disable-line no-underscore-dangle
+  // eslint-disable-next-line no-underscore-dangle
+  if (!fileModifiedTime._isAMomentObject) {
     mFileModifiedTime = moment.utc(fileModifiedTime.toISOString());
   }
 
@@ -184,10 +197,16 @@ function initSyncAllFilesForTable(table) {
     })
     .then(apiRecords => {
       if (!apiRecords) {
-        throw new Error(`The records for table \`${table}\` in the ServiceNow instance do not exist.`);
+        throw new Error(
+          `The records for table \`${table}\` in the ServiceNow instance do not exist.`
+        );
       }
 
-      return syncAllFilesForTable(table, apiRecords, savedFileStatsBySysIdByPath);
+      return syncAllFilesForTable(
+        table,
+        apiRecords,
+        savedFileStatsBySysIdByPath
+      );
     });
 }
 exports.initSyncAllFilesForTable = initSyncAllFilesForTable;
@@ -203,10 +222,9 @@ exports.initSyncAllFilesForTable = initSyncAllFilesForTable;
 function syncAllFilesForTable(table, apiRecords, fileStatsBySysIdByPath) {
   return Promise.map(apiRecords, record =>
     syncRecord(table, record, fileStatsBySysIdByPath[record.sys_id])
-  )
-    .catch( err => {
-      throw err;
-    });
+  ).catch(err => {
+    throw err;
+  });
 }
 exports.syncAllFilesForTable = syncAllFilesForTable;
 
@@ -219,7 +237,9 @@ exports.syncAllFilesForTable = syncAllFilesForTable;
  * @returns {Promise} Promise -> object with data to be uploaded and files to be written.
  */
 function calculateSyncRecordData(table, recordData, fileStatsByPaths) {
-  const updatedOnMoment = convertServiceNowDatetimeToMoment(recordData.sys_updated_on);
+  const updatedOnMoment = convertServiceNowDatetimeToMoment(
+    recordData.sys_updated_on
+  );
   const sync = {
     updateRecordData: {},
     filesToUpdate: {},
@@ -227,15 +247,26 @@ function calculateSyncRecordData(table, recordData, fileStatsByPaths) {
   };
   const filePromises = [];
 
-  const nondataFields = _.concat(getFileNameFields(table), ['sys_id', 'sys_updated_on']);
+  const nondataFields = _.concat(getFileNameFields(table), [
+    'sys_id',
+    'sys_updated_on'
+  ]);
   const fileData = _.omit(recordData, nondataFields);
 
   _.forEach(fileData, (val, key) => {
-    const matchingFilePath = _.findKey(fileStatsByPaths, fsStat => fsStat.field === key);
+    const matchingFilePath = _.findKey(
+      fileStatsByPaths,
+      fsStat => fsStat.field === key
+    );
     if (matchingFilePath) {
       const fileObj = fileStatsByPaths[matchingFilePath];
-      const readFile = readFileAsync(matchingFilePath, 'utf8').then(fileContents => {
-        if (recordData[fileObj.field] === fileContents) { return; }
+      const readFile = readFileAsync(
+        matchingFilePath,
+        'utf8'
+      ).then(fileContents => {
+        if (recordData[fileObj.field] === fileContents) {
+          return;
+        }
 
         if (isFileNewerThanRecord(fileObj.stats.mtime, updatedOnMoment)) {
           sync.updateRecordData[fileObj.field] = fileContents;
@@ -289,7 +320,11 @@ exports.calculateSyncRecordData = calculateSyncRecordData;
  * @returns {promise}
  */
 function syncRecord(table, recordData, fileStatsByPaths) {
-  return calculateSyncRecordData(table, recordData, fileStatsByPaths).then(syncData => {
+  return calculateSyncRecordData(
+    table,
+    recordData,
+    fileStatsByPaths
+  ).then(syncData => {
     const promises = _.map(syncData.filesToUpdate, (content, filePath) =>
       writeFileAsync(filePath, content, 'utf8').then(() => {
         console.log(`Updated local file: ${trimCwd(filePath)}`); // eslint-disable-line no-console
@@ -304,12 +339,13 @@ function syncRecord(table, recordData, fileStatsByPaths) {
 
     if (!_.isEmpty(syncData.missingFileFields)) {
       let filesToWrite = generateFilesToWriteForRecord(table, recordData);
-      filesToWrite = _.filter(filesToWrite, fileObj =>
-        typeof syncData.missingFileFields[fileObj.contentField] !== 'undefined'
+      filesToWrite = _.filter(
+        filesToWrite,
+        fileObj =>
+          typeof syncData.missingFileFields[fileObj.contentField] !==
+          'undefined'
       );
-      promises.push(
-        writeFilesForTable(table, filesToWrite)
-      );
+      promises.push(writeFilesForTable(table, filesToWrite));
     }
 
     return Promise.all(promises);
@@ -361,12 +397,11 @@ function pull() {
       const sysId = tableRecordsToPull[j];
 
       getRecordPromises.push(
-        getRecord(table, sysId, getFieldsToRetrieve(table))
-          .then(recordData => {
-            // write files
-            const filesToWrite = generateFilesToWriteForRecord(table, recordData);
-            return writeFilesForTable(table, filesToWrite);
-          })
+        getRecord(table, sysId, getFieldsToRetrieve(table)).then(recordData => {
+          // write files
+          const filesToWrite = generateFilesToWriteForRecord(table, recordData);
+          return writeFilesForTable(table, filesToWrite);
+        })
       );
     }
   }
@@ -382,7 +417,9 @@ exports.pull = pull;
  */
 async function push() {
   const tableNames = _.keys(getRecordsToSync());
-  const syncedFileStats = await Promise.map(tableNames, table => getSyncedFileStatsForTable(table));
+  const syncedFileStats = await Promise.map(tableNames, table =>
+    getSyncedFileStatsForTable(table)
+  );
 
   return Promise.map(tableNames, (table, i) => {
     const { fileStatsBySysIdByPath } = syncedFileStats[i];
@@ -398,8 +435,7 @@ async function push() {
         })
       ).then(() => updateRecord(table, sysId, updateRecordData));
     });
-  })
-  .catch(e => {
+  }).catch(e => {
     throw e;
   });
 }

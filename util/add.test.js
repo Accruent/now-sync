@@ -2,11 +2,11 @@ jest.mock('fs');
 jest.mock('./service-now');
 
 const moment = require('moment');
+const { generateFilesToWriteForRecord, getFieldValues } = require('./add');
 const {
-  generateFilesToWriteForRecord,
-  getFieldValues
-} = require('./add');
-const { convertServiceNowDatetimeToMoment, getRecord } = require('./service-now');
+  convertServiceNowDatetimeToMoment,
+  getRecord
+} = require('./service-now');
 
 describe('getFieldValues', () => {
   test('replaces field `sys_scope` with `sys_scope.scope`', () => {
@@ -37,7 +37,9 @@ describe('getFieldValues', () => {
 
     getRecord.mockImplementation((table, sysId, fieldsToRetrieve) => {
       expect(fieldsToRetrieve.indexOf('web_service_definition')).toBe(-1);
-      expect(fieldsToRetrieve.indexOf('web_service_definition.service_id')).not.toBe(-1);
+      expect(
+        fieldsToRetrieve.indexOf('web_service_definition.service_id')
+      ).not.toBe(-1);
       expect(sysId).toBe(exampleSysId);
 
       return Promise.resolve({
@@ -73,7 +75,10 @@ describe('generateFilesToWriteForRecord', () => {
 
   test('creates a file object for each content field', () => {
     jest.unmock('./service-now');
-    const filesToWrite = generateFilesToWriteForRecord(exampleTable, examplefieldValues);
+    const filesToWrite = generateFilesToWriteForRecord(
+      exampleTable,
+      examplefieldValues
+    );
     expect(filesToWrite.length).toBe(7);
   });
 });
@@ -81,4 +86,3 @@ describe('generateFilesToWriteForRecord', () => {
 // describe('writeFilesForTable', () => {
 
 // });
-

@@ -4,8 +4,15 @@ const mkdirp = require('mkdirp');
 const path = require('path');
 const Promise = require('bluebird');
 const { parseConfigFile, saveConfigFile } = require('./config');
-const { compileFileName, getFileNameFields, trimCwd } = require('./file-naming');
-const { convertServiceNowDatetimeToMoment, getRecord } = require('./service-now');
+const {
+  compileFileName,
+  getFileNameFields,
+  trimCwd
+} = require('./file-naming');
+const {
+  convertServiceNowDatetimeToMoment,
+  getRecord
+} = require('./service-now');
 
 const writeFileAsync = Promise.promisify(fs.writeFile);
 const utimesAsync = Promise.promisify(fs.utimes);
@@ -26,12 +33,17 @@ const utimesAsync = Promise.promisify(fs.utimes);
 function generateFilesToWriteForRecord(table, fieldValues) {
   const config = parseConfigFile();
 
-  return _.map(config.config[table].formats, ({ fileName: fileTemplate, contentField }) => ({
-    contentField,
-    fileName: compileFileName(fileTemplate, fieldValues),
-    fileContent: fieldValues[contentField],
-    fileMtime: convertServiceNowDatetimeToMoment(fieldValues.sys_updated_on).unix()
-  }));
+  return _.map(
+    config.config[table].formats,
+    ({ fileName: fileTemplate, contentField }) => ({
+      contentField,
+      fileName: compileFileName(fileTemplate, fieldValues),
+      fileContent: fieldValues[contentField],
+      fileMtime: convertServiceNowDatetimeToMoment(
+        fieldValues.sys_updated_on
+      ).unix()
+    })
+  );
 }
 exports.generateFilesToWriteForRecord = generateFilesToWriteForRecord;
 
@@ -51,7 +63,7 @@ function getFieldsToRetrieve(table) {
 
   recordFields.push('sys_updated_on');
 
-  const fieldsToRetrieve = _.uniq( recordFields.concat(contentFields) );
+  const fieldsToRetrieve = _.uniq(recordFields.concat(contentFields));
   return _.map(fieldsToRetrieve, name => {
     if (name === 'sys_scope') {
       return 'sys_scope.scope';
@@ -104,33 +116,37 @@ function writeFilesForTable(table, filesToWrite) {
     config.records[table] = [];
   }
 
-  _.forEach(filesToWrite, ({ contentField, fileName, fileContent, fileMtime }) => {
-    const filePath = path.resolve(writePath, fileName);
-    const formattedFileContent = fileContent.replace(
-      new RegExp('\r\n', 'g'), // eslint-disable-line no-control-regex
-      '\n'
-    );
+  _.forEach(
+    filesToWrite,
+    ({ contentField, fileName, fileContent, fileMtime }) => {
+      const filePath = path.resolve(writePath, fileName);
+      const formattedFileContent = fileContent.replace(
+        new RegExp('\r\n', 'g'), // eslint-disable-line no-control-regex
+        '\n'
+      );
 
-    writeFilePromises.push(
-      writeFileAsync(filePath, formattedFileContent)
-        .then(() => utimesAsync(filePath, fileMtime, fileMtime))
-        .then(() => {
-          console.log(`${trimCwd(filePath)} created.`); // eslint-disable-line no-console
-        })
-    );
+      writeFilePromises.push(
+        writeFileAsync(filePath, formattedFileContent)
+          .then(() => utimesAsync(filePath, fileMtime, fileMtime))
+          .then(() => {
+            console.log(`${trimCwd(filePath)} created.`); // eslint-disable-line no-console
+          })
+      );
 
-    const recordConfigAlreadyExists = _.find(
-      config.records[table],
-      ({ fileName: configRecordFileName }) => fileName === configRecordFileName
-    );
+      const recordConfigAlreadyExists = _.find(
+        config.records[table],
+        ({ fileName: configRecordFileName }) =>
+          fileName === configRecordFileName
+      );
 
-    if (!recordConfigAlreadyExists) {
-      config.records[table].push({
-        contentField,
-        fileName
-      });
+      if (!recordConfigAlreadyExists) {
+        config.records[table].push({
+          contentField,
+          fileName
+        });
+      }
     }
-  });
+  );
 
   saveConfigFile(config);
   return Promise.all(writeFilePromises);

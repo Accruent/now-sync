@@ -1,10 +1,13 @@
 const inquirer = require('inquirer');
 const CommandParser = require('../command-parser');
 const { parseConfigFile } = require('../../util/config');
-const { generateFilesToWriteForRecord, getFieldValues, writeFilesForTable } = require('../../util/add');
+const {
+  generateFilesToWriteForRecord,
+  getFieldValues,
+  writeFilesForTable
+} = require('../../util/add');
 
-module.exports =
-class Create extends CommandParser {
+module.exports = class Create extends CommandParser {
   constructor(args) {
     super(args);
 
@@ -34,7 +37,9 @@ class Create extends CommandParser {
     const tableConfig = config.config[table];
 
     if (!tableConfig) {
-      throw new Error(`Configuration for table \`${table}\` not found. Run \`now add:table\` to configure files for this table.`);
+      throw new Error(
+        `Configuration for table \`${table}\` not found. Run \`now add:table\` to configure files for this table.`
+      );
     }
 
     const data = await getFieldValues(table, sysId);

@@ -22,8 +22,8 @@ function get(url, opts) {
 
   if (typeof fetch === 'function') {
     return fetch(url, options)
-      .then( stream => stream.json() )
-      .catch( err => {
+      .then(stream => stream.json())
+      .catch(err => {
         throw err;
       });
   }
@@ -38,8 +38,8 @@ function put(url, opts) {
 
   if (typeof fetch === 'function') {
     return fetch(url, options)
-      .then( stream => stream.json() )
-      .catch( err => {
+      .then(stream => stream.json())
+      .catch(err => {
         throw err;
       });
   }
@@ -47,4 +47,3 @@ function put(url, opts) {
   throw new Error('fetch isn’t a function?!');
 }
 exports.put = put;
-

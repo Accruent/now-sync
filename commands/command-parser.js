@@ -26,13 +26,17 @@ module.exports = class CommandParser {
       const configFileContents = parseConfigFile();
 
       if (!configFileContents) {
-        const errorMsg = chalk.bold.red(`${CONFIG_FILE_NAME} does not exist or is not readable. Run \`now config\` first.`);
+        const errorMsg = chalk.bold.red(
+          `${CONFIG_FILE_NAME} does not exist or is not readable. Run \`now config\` first.`
+        );
         console.error(errorMsg); // eslint-disable-line no-console
         return;
       }
 
       if (!authFileContents) {
-        const errorMsg = chalk.bold.red(`${AUTH_FILE_NAME} does not exist or is not readable. Run \`now config\` first.`);
+        const errorMsg = chalk.bold.red(
+          `${AUTH_FILE_NAME} does not exist or is not readable. Run \`now config\` first.`
+        );
         console.error(errorMsg); // eslint-disable-line no-console
         return;
       }

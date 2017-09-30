@@ -5,15 +5,16 @@ const { getInstanceVersion } = require('./info');
 const { get } = require('./api');
 
 describe('getInstanceVersion', () => {
-  get.mockImplementation(() => new Promise(resolve => {
-    setTimeout(() => {
-      resolve({
-        result: [
-          { value: 'test_version' }
-        ]
-      });
-    }, 25);
-  }));
+  get.mockImplementation(
+    () =>
+      new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            result: [{ value: 'test_version' }]
+          });
+        }, 25);
+      })
+  );
   const instanceVersionPromise = getInstanceVersion();
 
   test('retrieves version', () => {

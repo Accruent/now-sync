@@ -28,7 +28,9 @@ class ConfigGenerator extends Generator {
         // answer and add additional questions to
         // gather the file extension for each file type.
         if (name === 'fileFields') {
-          this.fileFieldNames = _.map(answer.split(','), fileField => fileField.trim());
+          this.fileFieldNames = _.map(answer.split(','), fileField =>
+            fileField.trim()
+          );
           _.forEach(this.fileFieldNames, fieldName => {
             questions.onNext({
               name: `extensions.${fieldName}`,
@@ -61,23 +63,27 @@ class ConfigGenerator extends Generator {
     questions.onNext({
       name: 'nameField',
       type: 'input',
-      message: 'Which field(s) to use as the table’s name field? (Use commas[,] to separate fields)',
+      message:
+        'Which field(s) to use as the table’s name field? (Use commas[,] to separate fields)',
       store: true,
       validate: answer => !!answer
     });
     questions.onNext({
       name: 'confirmTable',
       type: 'confirm',
-      message: 'Table configuration already exists! Are you sure you want to reconfigure?',
+      message:
+        'Table configuration already exists! Are you sure you want to reconfigure?',
       default: false,
       when: answers => !!config.config[answers.table]
     });
     questions.onNext({
       name: 'fileFields',
       type: 'input',
-      message: 'Field name(s) to save as files? (Use commas[,] to separate field names)',
+      message:
+        'Field name(s) to save as files? (Use commas[,] to separate field names)',
       validate: answer => !!answer,
-      when: answers => _.isUndefined(answers.confirmTable) || answers.confirmTable
+      when: answers =>
+        _.isUndefined(answers.confirmTable) || answers.confirmTable
     });
   }
 
@@ -95,7 +101,9 @@ class ConfigGenerator extends Generator {
     };
     config.records[table] = [];
 
-    const filenamePrefix = _.map(formattedNameFields, name => `:${name}`).join('-');
+    const filenamePrefix = _.map(formattedNameFields, name => `:${name}`).join(
+      '-'
+    );
 
     _.forEach(fileFieldNames, field => {
       config.config[table].formats.push({

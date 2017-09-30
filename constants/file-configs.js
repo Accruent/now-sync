@@ -93,7 +93,8 @@ exports.sys_script = {
   nameField: ['collection', 'name'],
   formats: [
     {
-      fileName: ':collection-:name-script-:sys_id.js', contentField: 'script'
+      fileName: ':collection-:name-script-:sys_id.js',
+      contentField: 'script'
     }
   ]
 };

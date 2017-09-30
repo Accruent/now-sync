@@ -47,18 +47,25 @@ function watch() {
     const table = relativePath[0];
     const file = relativePath[1];
 
-    const fileConfig = _.find(config.records[table], record =>
-      record.fileName === file
+    const fileConfig = _.find(
+      config.records[table],
+      record => record.fileName === file
     );
     if (!fileConfig) {
-      console.error(chalk.red(`Could not find a file configuration matching table record on ${table}: ${file}. Make sure that configuration exists in your .now-sync.yml file. If it does not exist, run \`now add\` to add the file configuration.`)); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.error(
+        chalk.red(
+          `Could not find a file configuration matching table record on ${table}: ${file}. Make sure that configuration exists in your .now-sync.yml file. If it does not exist, run \`now add\` to add the file configuration.`
+        )
+      );
 
       return;
     }
 
     const { contentField } = fileConfig;
-    const { fileName: fileTemplate } = _.find(config.config[table].formats, format =>
-      format.contentField === contentField
+    const { fileName: fileTemplate } = _.find(
+      config.config[table].formats,
+      format => format.contentField === contentField
     );
     const fieldValues = getFieldValuesFromFileName(file, fileTemplate);
 
@@ -83,8 +90,9 @@ function watch() {
     const file = relativePath[1];
 
     const configRecords = config.records[table];
-    const configRecordIndex = _.findIndex(configRecords, record =>
-      record.fileName === file
+    const configRecordIndex = _.findIndex(
+      configRecords,
+      record => record.fileName === file
     );
 
     if (configRecordIndex > -1) {

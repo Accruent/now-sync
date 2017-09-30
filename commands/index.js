@@ -35,19 +35,23 @@ module.exports = {
     command: add
   },
   pull: {
-    description: 'Overwrites all local file content with synced ServiceNow record content',
+    description:
+      'Overwrites all local file content with synced ServiceNow record content',
     command: pull
   },
   push: {
-    description: 'Overwrites all synced ServiceNow record fields with local file content',
+    description:
+      'Overwrites all synced ServiceNow record fields with local file content',
     command: push
   },
   sync: {
-    description: '!DANGER! Perform a one-time sync on all synced local files with ServiceNow records',
+    description:
+      '!DANGER! Perform a one-time sync on all synced local files with ServiceNow records',
     command: sync
   },
   watch: {
-    description: 'Watches project folder files for changes and pushes changes to ServiceNow',
+    description:
+      'Watches project folder files for changes and pushes changes to ServiceNow',
     command: watch
   }
 };

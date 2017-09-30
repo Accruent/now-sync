@@ -19,8 +19,9 @@ const { parseConfigFile } = require('./config');
  * @returns {string} the Table API url
  */
 function buildTableApiUrl(tableName, opts) {
-  return (opts) ?
-    `${buildTableApiBaseUrl(tableName)}?${buildTableApiOptions(opts)}` : buildTableApiBaseUrl(tableName);
+  return opts
+    ? `${buildTableApiBaseUrl(tableName)}?${buildTableApiOptions(opts)}`
+    : buildTableApiBaseUrl(tableName);
 }
 exports.buildTableApiUrl = buildTableApiUrl;
 
@@ -135,14 +136,17 @@ function getRecord(table, sysId, fields) {
       }
 
       if (record['web_service_definition.service_id']) {
-        record.web_service_definition = record['web_service_definition.service_id'];
+        record.web_service_definition =
+          record['web_service_definition.service_id'];
         delete record['web_service_definition.service_id'];
       }
 
       return record;
     })
     .catch(e => {
-      throw new Error(`An error occurred when retrieving record information: ${table}.${sysId}.\n${e}`);
+      throw new Error(
+        `An error occurred when retrieving record information: ${table}.${sysId}.\n${e}`
+      );
     });
 }
 exports.getRecord = getRecord;
@@ -165,8 +169,11 @@ async function updateRecord(table, sysId, body) {
 
   const call = await put(url, opts);
 
-  console.log( // eslint-disable-line no-console
-    `Updated ServiceNow record: ${table}/${sysId} with fields: ${_.keys(filteredBody).join(', ')}`
+  // eslint-disable-next-line no-console
+  console.log(
+    `Updated ServiceNow record: ${table}/${sysId} with fields: ${_.keys(
+      filteredBody
+    ).join(', ')}`
   );
 
   return call;

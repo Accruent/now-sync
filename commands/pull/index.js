@@ -2,8 +2,7 @@ const ora = require('ora');
 const CommandParser = require('../command-parser');
 const { pull } = require('../../util/sync');
 
-module.exports =
-class Pull extends CommandParser {
+module.exports = class Pull extends CommandParser {
   constructor(args) {
     super(args);
 
