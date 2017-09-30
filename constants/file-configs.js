@@ -14,7 +14,7 @@ exports.content_css = {
   nameField: ['sys_scope', 'name'],
   formats: [
     {
-      fileName: ':sys_scope-:name-style-:sys_id.js',
+      fileName: ':sys_scope-:name-style-:sys_id.css',
       contentField: 'style'
     }
   ]
