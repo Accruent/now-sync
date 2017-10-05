@@ -31,6 +31,44 @@ exports.sp_css = {
   ]
 };
 
+// Service Portal Header/Footer
+exports.sp_header_footer = {
+  nameField: ['sys_scope', 'id'],
+  formats: [
+    {
+      fileName: ':sys_scope-:id-template-:sys_id.html',
+      contentField: 'template'
+    },
+    {
+      fileName: ':sys_scope-:id-css-:sys_id.css',
+      contentField: 'css'
+    },
+    {
+      fileName: ':sys_scope-:id-script-:sys_id.js',
+      contentField: 'script'
+    },
+    {
+      fileName: ':sys_scope-:id-client_script-:sys_id.js',
+      contentField: 'client_script'
+    },
+    {
+      fileName: ':sys_scope-:id-link-:sys_id.js',
+      contentField: 'link'
+    }
+  ]
+};
+
+// Service Portal Page
+exports.sp_page = {
+  nameField: ['id'],
+  formats: [
+    {
+      fileName: ':id-css-:sys_id.css',
+      contentField: 'css'
+    }
+  ]
+};
+
 // Service Portal
 exports.sp_portal = {
   nameField: 'url_suffix',
@@ -38,6 +76,10 @@ exports.sp_portal = {
     {
       fileName: ':url_suffix-quick_start_config-:sys_id.json',
       contentField: 'quick_start_config'
+    },
+    {
+      fileName: ':url_suffix-css_variables-:sys_id.scss',
+      contentField: 'css_variables'
     }
   ]
 };
