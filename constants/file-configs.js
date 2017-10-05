@@ -40,7 +40,7 @@ exports.sp_header_footer = {
       contentField: 'template'
     },
     {
-      fileName: ':sys_scope-:id-css-:sys_id.css',
+      fileName: ':sys_scope-:id-css-:sys_id.scss',
       contentField: 'css'
     },
     {
