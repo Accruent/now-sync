@@ -6,6 +6,7 @@ function generateBaseOptions() {
   const auth = parseConfigFile(true);
   const baseOptions = {
     headers: {
+      Accept: 'application/json',
       'Content-Type': 'application/json'
     }
   };
@@ -31,6 +32,22 @@ function get(url, opts) {
   throw new Error('fetch isn’t a function?!');
 }
 exports.get = get;
+
+function post(url, opts) {
+  const options = merge({}, generateBaseOptions(), opts);
+  options.method = 'POST';
+
+  if (typeof fetch === 'function') {
+    return fetch(url, options)
+      .then(stream => stream.json())
+      .catch(err => {
+        throw err;
+      });
+  }
+
+  throw new Error('fetch isn’t a function?!');
+}
+exports.post = post;
 
 function put(url, opts) {
   const options = merge({}, generateBaseOptions(), opts);

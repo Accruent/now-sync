@@ -1,10 +1,15 @@
 const chalk = require('chalk');
+const mapValues = require('lodash/mapValues');
+const trim = require('lodash/trim');
 const { AUTH_FILE_NAME, CONFIG_FILE_NAME } = require('../constants');
 const { parseConfigFile } = require('../util/config');
 
 module.exports = class CommandParser {
   constructor(args) {
-    this.args = args;
+    this.args = mapValues(
+      args,
+      value => (typeof value === 'string' ? trim(value) : value)
+    );
 
     this.action = this.action.bind(this);
     this.log = this.log.bind(this);
@@ -27,7 +32,9 @@ module.exports = class CommandParser {
 
       if (!configFileContents) {
         const errorMsg = chalk.bold.red(
-          `${CONFIG_FILE_NAME} does not exist or is not readable. Run \`now config\` first.`
+          `${
+            CONFIG_FILE_NAME
+          } does not exist or is not readable. Run \`now config\` first.`
         );
         console.error(errorMsg); // eslint-disable-line no-console
         return;
@@ -35,7 +42,9 @@ module.exports = class CommandParser {
 
       if (!authFileContents) {
         const errorMsg = chalk.bold.red(
-          `${AUTH_FILE_NAME} does not exist or is not readable. Run \`now config\` first.`
+          `${
+            AUTH_FILE_NAME
+          } does not exist or is not readable. Run \`now config\` first.`
         );
         console.error(errorMsg); // eslint-disable-line no-console
         return;

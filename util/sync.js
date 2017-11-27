@@ -1,4 +1,5 @@
 const fs = require('fs');
+const ora = require('ora');
 const path = require('path');
 const _ = require('lodash');
 const moment = require('moment');
@@ -198,7 +199,9 @@ function initSyncAllFilesForTable(table) {
     .then(apiRecords => {
       if (!apiRecords) {
         throw new Error(
-          `The records for table \`${table}\` in the ServiceNow instance do not exist.`
+          `The records for table \`${
+            table
+          }\` in the ServiceNow instance do not exist.`
         );
       }
 
@@ -260,20 +263,19 @@ function calculateSyncRecordData(table, recordData, fileStatsByPaths) {
     );
     if (matchingFilePath) {
       const fileObj = fileStatsByPaths[matchingFilePath];
-      const readFile = readFileAsync(
-        matchingFilePath,
-        'utf8'
-      ).then(fileContents => {
-        if (recordData[fileObj.field] === fileContents) {
-          return;
-        }
+      const readFile = readFileAsync(matchingFilePath, 'utf8').then(
+        fileContents => {
+          if (recordData[fileObj.field] === fileContents) {
+            return;
+          }
 
-        if (isFileNewerThanRecord(fileObj.stats.mtime, updatedOnMoment)) {
-          sync.updateRecordData[fileObj.field] = fileContents;
-        } else {
-          sync.filesToUpdate[matchingFilePath] = recordData[fileObj.field];
+          if (isFileNewerThanRecord(fileObj.stats.mtime, updatedOnMoment)) {
+            sync.updateRecordData[fileObj.field] = fileContents;
+          } else {
+            sync.filesToUpdate[matchingFilePath] = recordData[fileObj.field];
+          }
         }
-      });
+      );
       filePromises.push(readFile);
     } else {
       sync.missingFileFields[key] = val;
@@ -320,36 +322,34 @@ exports.calculateSyncRecordData = calculateSyncRecordData;
  * @returns {promise}
  */
 function syncRecord(table, recordData, fileStatsByPaths) {
-  return calculateSyncRecordData(
-    table,
-    recordData,
-    fileStatsByPaths
-  ).then(syncData => {
-    const promises = _.map(syncData.filesToUpdate, (content, filePath) =>
-      writeFileAsync(filePath, content, 'utf8').then(() => {
-        console.log(`Updated local file: ${trimCwd(filePath)}`); // eslint-disable-line no-console
-      })
-    );
-
-    if (!_.isEmpty(syncData.updateRecordData)) {
-      promises.push(
-        updateRecord(table, recordData.sys_id, syncData.updateRecordData)
+  return calculateSyncRecordData(table, recordData, fileStatsByPaths).then(
+    syncData => {
+      const promises = _.map(syncData.filesToUpdate, (content, filePath) =>
+        writeFileAsync(filePath, content, 'utf8').then(() => {
+          console.log(`Updated local file: ${trimCwd(filePath)}`); // eslint-disable-line no-console
+        })
       );
-    }
 
-    if (!_.isEmpty(syncData.missingFileFields)) {
-      let filesToWrite = generateFilesToWriteForRecord(table, recordData);
-      filesToWrite = _.filter(
-        filesToWrite,
-        fileObj =>
-          typeof syncData.missingFileFields[fileObj.contentField] !==
-          'undefined'
-      );
-      promises.push(writeFilesForTable(table, filesToWrite));
-    }
+      if (!_.isEmpty(syncData.updateRecordData)) {
+        promises.push(
+          updateRecord(table, recordData.sys_id, syncData.updateRecordData)
+        );
+      }
 
-    return Promise.all(promises);
-  });
+      if (!_.isEmpty(syncData.missingFileFields)) {
+        let filesToWrite = generateFilesToWriteForRecord(table, recordData);
+        filesToWrite = _.filter(
+          filesToWrite,
+          fileObj =>
+            typeof syncData.missingFileFields[fileObj.contentField] !==
+            'undefined'
+        );
+        promises.push(writeFilesForTable(table, filesToWrite));
+      }
+
+      return Promise.all(promises);
+    }
+  );
 }
 exports.syncRecord = syncRecord;
 
@@ -416,6 +416,8 @@ exports.pull = pull;
  * @returns {promise<object[]>} The JSON responses of the update calls
  */
 async function push() {
+  const spinner = ora('Pushing file content to ServiceNow...').start();
+
   const tableNames = _.keys(getRecordsToSync());
   const syncedFileStats = await Promise.map(tableNames, table =>
     getSyncedFileStatsForTable(table)
@@ -435,8 +437,12 @@ async function push() {
         })
       ).then(() => updateRecord(table, sysId, updateRecordData));
     });
-  }).catch(e => {
-    throw e;
-  });
+  })
+    .catch(e => {
+      throw e;
+    })
+    .finally(() => {
+      spinner.stop();
+    });
 }
 exports.push = push;

@@ -35,7 +35,9 @@ class ConfigGenerator extends Generator {
             questions.onNext({
               name: `extensions.${fieldName}`,
               type: 'input',
-              message: `File extension for field \`${fieldName}\`? (don’t include the period[.])`,
+              message: `File extension for field \`${
+                fieldName
+              }\`? (don’t include the period[.])`,
               validate: extensionAnswer => !!extensionAnswer
             });
           });

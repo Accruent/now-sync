@@ -1,10 +1,10 @@
 module.exports = {
   init: 'config',
-  d: 'delete',
+  // d: 'delete',
   h: 'help',
   i: 'info',
-  l: 'list',
-  ls: 'list',
+  // l: 'list',
+  // ls: 'list',
   s: 'sync',
   w: 'watch'
 };
