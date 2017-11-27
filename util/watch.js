@@ -55,7 +55,11 @@ function watch() {
       // eslint-disable-next-line no-console
       console.error(
         chalk.red(
-          `Could not find a file configuration matching table record on ${table}: ${file}. Make sure that configuration exists in your .now-sync.yml file. If it does not exist, run \`now add\` to add the file configuration.`
+          `Could not find a file configuration matching table record on ${
+            table
+          }: ${
+            file
+          }. Make sure that configuration exists in your .now-sync.yml file. If it does not exist, run \`now add\` to add the file configuration.`
         )
       );
 

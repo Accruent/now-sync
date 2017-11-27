@@ -31,7 +31,13 @@ function compileFileName(fileTemplate, data) {
       const errorFileNameReExec = errorFileNameRe[i].exec(tokenFromData);
       if (errorFileNameReExec) {
         throw new Error(
-          `Invalid character "${errorFileNameReExec[0]}" found in the record’s \`${token.name}\` field. Change your record’s \`${token.name}\` field value and try again.`
+          `Invalid character "${
+            errorFileNameReExec[0]
+          }" found in the record’s \`${
+            token.name
+          }\` field. Change your record’s \`${
+            token.name
+          }\` field value and try again.`
         );
       }
     }
@@ -80,10 +86,11 @@ function getFileNameFields(table) {
   const formattedNameFields =
     typeof nameFields === 'string' ? [nameFields] : [...nameFields];
   const tableFileKeyObjs = _.flatten(
-    _.map(
-      tableConfig.formats,
-      format => pathToRegexp(format.fileName, [], { delimiter: '-' }).keys
-    )
+    _.map(tableConfig.formats, format => {
+      const keys = [];
+      pathToRegexp(format.fileName, keys, { delimiter: '-' });
+      return keys;
+    })
   );
   const tableFileFields = _.map(tableFileKeyObjs, keyObj => keyObj.name);
 
@@ -136,7 +143,9 @@ function trimCwd(filePath) {
 
   if (filePath.indexOf(cwd) !== 0) {
     throw new Error(
-      `Incorrect usage of trimCwd; cwd "${cwd}" not found in filePath "${filePath}"`
+      `Incorrect usage of trimCwd; cwd "${cwd}" not found in filePath "${
+        filePath
+      }"`
     );
   }
 

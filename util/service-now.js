@@ -32,7 +32,7 @@ exports.buildTableApiUrl = buildTableApiUrl;
  * @returns {string} Table API url
  */
 function buildTableApiBaseUrl(tableName) {
-  const { url } = parseConfigFile(true);
+  const url = getInstanceUrl();
   return `${url}/api/now/v1/table/${tableName}`;
 }
 exports.buildTableApiBaseUrl = buildTableApiBaseUrl;
@@ -114,6 +114,17 @@ function convertDateToServiceNowDatetime(dateObj) {
 exports.convertDateToServiceNowDatetime = convertDateToServiceNowDatetime;
 
 /**
+ * Returns the configured ServiceNow instance URL.
+ *
+ * @returns {string} The instance url
+ */
+function getInstanceUrl() {
+  const { url } = parseConfigFile(true);
+  return url;
+}
+exports.getInstanceUrl = getInstanceUrl;
+
+/**
  * Retrieves field values for a ServiceNow record.
  *
  * @param {string} table ServiceNow table’s API Name
@@ -145,7 +156,9 @@ function getRecord(table, sysId, fields) {
     })
     .catch(e => {
       throw new Error(
-        `An error occurred when retrieving record information: ${table}.${sysId}.\n${e}`
+        `An error occurred when retrieving record information: ${table}.${
+          sysId
+        }.\n${e}`
       );
     });
 }

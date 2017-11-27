@@ -11,47 +11,92 @@ const watch = require('./watch');
 
 module.exports = {
   config: {
-    description: 'Initiates config for current folder (run this first)',
-    command: config
+    command: ['config', 'init', 'c'],
+    describe: 'Initiates config for current folder (run this first)',
+    options: {
+      host: {
+        alias: 'h',
+        describe: 'ServiceNow instance URL (include the `https://`)',
+        type: 'string'
+      },
+      user: {
+        alias: 'u',
+        describe: 'User name',
+        type: 'string'
+      },
+      password: {
+        alias: 'p',
+        describe: 'Password',
+        type: 'string'
+      },
+      filepath: {
+        alias: 'f',
+        describe: 'Folder to store ServiceNow files',
+        default: './now',
+        type: 'string'
+      }
+    },
+    CommandClass: config
   },
   // delete: {
-  //   description: 'Removes file from ServiceNow and project folder',
-  //   command: del
+  //   describe: 'Removes file from ServiceNow and project folder',
+  //   CommandClass: del
   // },
   info: {
-    description: 'Lists information about ServiceNow instance',
-    command: info
+    command: ['info', 'i'],
+    describe: 'Lists information about ServiceNow instance',
+    CommandClass: info
   },
   // list: {
-  //   description: 'Lists all records of a record type sync’d in project folder with ServiceNow',
-  //   command: list
+  //   describe: 'Lists all records of a record type sync’d in project folder with ServiceNow',
+  //   CommandClass: list
   // },
   'add:table': {
-    description: 'Add a new table configuration to sync with local files',
-    command: addTable
+    command: 'add:table', // TODO: [options, ]
+    describe: 'Add a new table configuration to sync with local files',
+    CommandClass: addTable
   },
   add: {
-    description: 'Add record files to sync with a ServiceNow record',
-    command: add
+    command: ['add', 'a'],
+    describe: 'Add record files to sync with a ServiceNow record',
+    options: {
+      table: {
+        alias: 't',
+        describe: 'Table API name',
+        type: 'string'
+      },
+      id: {
+        alias: 'i',
+        describe: 'Record sys_id',
+        type: 'string'
+      }
+    },
+    CommandClass: add
   },
   pull: {
-    description:
+    command: 'pull',
+    describe:
       'Overwrites all local file content with synced ServiceNow record content',
-    command: pull
+    CommandClass: pull
   },
   push: {
-    description:
+    command: 'push',
+    describe:
       'Overwrites all synced ServiceNow record fields with local file content',
-    command: push
+    CommandClass: push
   },
   sync: {
-    description:
+    command: 'sync',
+    alias: 's',
+    describe:
       '!DANGER! Perform a one-time sync on all synced local files with ServiceNow records',
-    command: sync
+    CommandClass: sync
   },
   watch: {
-    description:
+    command: 'watch',
+    alias: 'w',
+    describe:
       'Watches project folder files for changes and pushes changes to ServiceNow',
-    command: watch
+    CommandClass: watch
   }
 };
