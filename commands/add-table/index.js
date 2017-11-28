@@ -1,7 +1,7 @@
-const path = require('path');
-const yeoman = require('yeoman-environment');
-
+const _ = require('lodash');
+const inquirer = require('inquirer');
 const CommandParser = require('../command-parser');
+const { saveConfigFile } = require('../../util/config');
 
 module.exports = class Config extends CommandParser {
   constructor(args) {
@@ -10,12 +10,112 @@ module.exports = class Config extends CommandParser {
     this.requiresConfigFile = true;
   }
 
-  action() {
-    const yeomanEnv = yeoman.createEnv();
-    const gen = yeomanEnv.getByPath(
-      path.resolve(__dirname, 'add-table-generator.js')
+  async action() {
+    const { table, nameField, fileFields, confirm } = this.args;
+
+    const {
+      promptTable,
+      promptNameField,
+      promptConfirm,
+      promptFileFields
+    } = await this.initialPrompt(this.args);
+
+    const finalTable = table || promptTable;
+    const finalNameField = nameField || promptNameField;
+    const finalFileFields = fileFields || promptFileFields;
+    const finalConfirm = confirm || promptConfirm;
+
+    if (!finalConfirm) {
+      return;
+    }
+
+    const fileFieldNames = _.map(finalFileFields.split(','), fileField =>
+      fileField.trim()
+    );
+    const extensionQuestions = [];
+    _.forEach(fileFieldNames, fieldName => {
+      extensionQuestions.push({
+        name: fieldName,
+        type: 'input',
+        message: `File extension for field \`${
+          fieldName
+        }\`? (don’t include the period[.])`,
+        validate: extensionAnswer => !!extensionAnswer
+      });
+    });
+
+    const extensions = await inquirer.prompt(extensionQuestions);
+    const formattedNameFields = _.map(finalNameField.split(','), name =>
+      name.trim()
     );
 
-    yeomanEnv.run([gen.namespace], {}, () => {});
+    this.config.config[table] = {
+      nameField: formattedNameFields,
+      formats: []
+    };
+    this.config.records[table] = [];
+
+    const filenamePrefix = _.map(formattedNameFields, name => `:${name}`).join(
+      '-'
+    );
+
+    _.forEach(fileFieldNames, field => {
+      this.config.config[finalTable].formats.push({
+        fileName: `${filenamePrefix}-${field}-:sys_id.${extensions[field]}`,
+        contentField: field
+      });
+    });
+
+    saveConfigFile(this.config);
+  }
+
+  initialPrompt({ table, nameField, fileFields, confirm }) {
+    const questions = [];
+
+    if (!table) {
+      questions.push({
+        name: 'promptTable',
+        type: 'input',
+        message: 'Table (API) name?',
+        store: true,
+        validate: answer => !!answer
+      });
+    }
+
+    if (!nameField) {
+      questions.push({
+        name: 'promptNameField',
+        type: 'input',
+        message:
+          'Which field(s) to use as the table’s name field? (Use commas[,] to separate fields)',
+        store: true,
+        validate: answer => !!answer
+      });
+    }
+
+    if (!confirm) {
+      questions.push({
+        name: 'promptConfirm',
+        type: 'confirm',
+        message:
+          'Table configuration already exists! Are you sure you want to reconfigure?',
+        default: false,
+        when: answers => !!this.config.config[answers.table]
+      });
+    }
+
+    if (!fileFields) {
+      questions.push({
+        name: 'promptFileFields',
+        type: 'input',
+        message:
+          'Field name(s) to save as files? (Use commas[,] to separate field names)',
+        validate: answer => !!answer,
+        when: answers =>
+          _.isUndefined(answers.confirmTable) || answers.confirmTable
+      });
+    }
+
+    return inquirer.prompt(questions);
   }
 };

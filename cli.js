@@ -11,7 +11,13 @@ module.exports = function cli() {
       const usageStr = command || commandNameKey;
       yargsSetup = yargs.command(usageStr, describe, options || {}, argv => {
         const commandClassInstance = new CommandClass(argv);
-        commandClassInstance.action();
+
+        try {
+          commandClassInstance.runAction();
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error(`ERROR: ${err.message}`);
+        }
       });
     }
   );

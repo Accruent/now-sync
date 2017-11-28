@@ -29,7 +29,7 @@ module.exports = {
         describe: 'Password',
         type: 'string'
       },
-      filepath: {
+      filePath: {
         alias: 'f',
         describe: 'Folder to store ServiceNow files',
         default: './now',
@@ -52,8 +52,32 @@ module.exports = {
   //   CommandClass: list
   // },
   'add:table': {
-    command: 'add:table', // TODO: [options, ]
+    command: ['add:table', 'at'],
     describe: 'Add a new table configuration to sync with local files',
+    options: {
+      table: {
+        alias: 't',
+        describe: 'Table API name',
+        type: 'string'
+      },
+      nameField: {
+        alias: 'n',
+        describe: 'Table’s name field (use commas[,] for multiple)',
+        type: 'string'
+      },
+      fileFields: {
+        alias: 'f',
+        describe: 'Field name(s) to save as files (use commas[,] for multiple)',
+        type: 'string'
+      },
+      confirm: {
+        alias: 'c',
+        describe:
+          'Confirms new table configuration if overwriting an existing one',
+        type: 'boolean',
+        default: false
+      }
+    },
     CommandClass: addTable
   },
   add: {

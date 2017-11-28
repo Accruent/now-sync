@@ -35,9 +35,7 @@
     "path-to-regexp": "^2.1.0",
     "roadrunner": "^1.1.0",
     "rx": "^4.1.0",
-    "yargs": "^10.0.3",
-    "yeoman-environment": "^1.6.6",
-    "yeoman-generator": "^1.1.1"
+    "yargs": "^10.0.3"
   },
   "devDependencies": {
     "eslint": "^4.11.0",
