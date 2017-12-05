@@ -1,6 +1,7 @@
 const yargs = require('yargs');
 const commands = require('./commands');
 const forEach = require('lodash/forEach');
+const { logError } = require('./util/logging');
 
 module.exports = function cli() {
   let yargsSetup = yargs;
@@ -15,8 +16,7 @@ module.exports = function cli() {
         try {
           commandClassInstance.runAction();
         } catch (err) {
-          // eslint-disable-next-line no-console
-          console.error(`ERROR: ${err.message}`);
+          logError(`ERROR: ${err.message}`);
         }
       });
     }

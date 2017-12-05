@@ -18,6 +18,7 @@ const {
 } = require('./add');
 const { parseConfigFile } = require('./config');
 const { get } = require('./api');
+const { logInfo } = require('./logging');
 const {
   buildTableApiUrl,
   convertServiceNowDatetimeToMoment,
@@ -326,7 +327,7 @@ function syncRecord(table, recordData, fileStatsByPaths) {
     syncData => {
       const promises = _.map(syncData.filesToUpdate, (content, filePath) =>
         writeFileAsync(filePath, content, 'utf8').then(() => {
-          console.log(`Updated local file: ${trimCwd(filePath)}`); // eslint-disable-line no-console
+          logInfo(`Updated local file: ${trimCwd(filePath)}`);
         })
       );
 

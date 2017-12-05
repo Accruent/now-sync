@@ -9,6 +9,7 @@ const {
   getFileNameFields,
   trimCwd
 } = require('./file-naming');
+const { logInfo } = require('./logging');
 const {
   convertServiceNowDatetimeToMoment,
   getRecord
@@ -130,7 +131,7 @@ function writeFilesForTable(table, filesToWrite) {
         writeFileAsync(filePath, formattedFileContent)
           .then(() => utimesAsync(filePath, fileMtime, fileMtime))
           .then(() => {
-            console.log(`${trimCwd(filePath)} created.`); // eslint-disable-line no-console
+            logInfo(`${trimCwd(filePath)} created.`);
           })
       );
 
