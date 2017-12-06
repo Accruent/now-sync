@@ -3,6 +3,7 @@ const _ = require('lodash');
 const yaml = require('js-yaml');
 const { AUTH_FILE_PATH, CONFIG_FILE_PATH } = require('./../constants');
 const defaultConfig = require('../constants/default-config');
+const { logInfo } = require('./logging');
 
 /**
  * Generates a JSON object for the file configs.
@@ -75,6 +76,6 @@ function saveConfigFile(configJson, isAuth) {
   const configFilePath = isAuth ? AUTH_FILE_PATH : CONFIG_FILE_PATH;
 
   fs.writeFileSync(configFilePath, yaml.safeDump(configJson));
-  console.log(`Created/updated \`${configFilePath}\``); // eslint-disable-line no-console
+  logInfo(`Created/updated \`${configFilePath}\``);
 }
 exports.saveConfigFile = saveConfigFile;

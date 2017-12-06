@@ -2,6 +2,7 @@ const _ = require('lodash');
 const moment = require('moment');
 
 const { get, put } = require('./api');
+const { logInfo } = require('./logging');
 const { parseConfigFile } = require('./config');
 
 /**
@@ -182,8 +183,7 @@ async function updateRecord(table, sysId, body) {
 
   const call = await put(url, opts);
 
-  // eslint-disable-next-line no-console
-  console.log(
+  logInfo(
     `Updated ServiceNow record: ${table}/${sysId} with fields: ${_.keys(
       filteredBody
     ).join(', ')}`

@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const chalk = require('chalk');
 const chokidar = require('chokidar');
 const fs = require('fs');
 const path = require('path');
@@ -7,6 +6,7 @@ const Promise = require('bluebird');
 
 const { getFieldValuesFromFileName } = require('./file-naming');
 const { parseConfigFile, saveConfigFile } = require('./config');
+const { logError, logInfo } = require('./logging');
 const { updateRecord } = require('./service-now');
 
 const readFileAsync = Promise.promisify(fs.readFile);
@@ -29,7 +29,7 @@ function watch() {
   });
 
   watcher.on('ready', () => {
-    console.log(`Watching ${config.filePath} for changes...`); // eslint-disable-line no-console
+    logInfo(`Watching ${config.filePath} for changes...`);
   });
 
   // Used for storing the file’s mtime (last modified time) before changes are made.
@@ -52,15 +52,12 @@ function watch() {
       record => record.fileName === file
     );
     if (!fileConfig) {
-      // eslint-disable-next-line no-console
-      console.error(
-        chalk.red(
-          `Could not find a file configuration matching table record on ${
-            table
-          }: ${
-            file
-          }. Make sure that configuration exists in your .now-sync.yml file. If it does not exist, run \`now add\` to add the file configuration.`
-        )
+      logError(
+        `Could not find a file configuration matching table record on ${
+          table
+        }: ${
+          file
+        }. Make sure that configuration exists in your .now-sync.yml file. If it does not exist, run \`now add\` to add the file configuration.`
       );
 
       return;
@@ -103,7 +100,7 @@ function watch() {
       configRecords.splice(configRecordIndex, 1);
 
       saveConfigFile(config);
-      console.log(`Removed "${table}/${file}" from now-sync config.`); // eslint-disable-line no-console
+      logInfo(`Removed "${table}/${file}" from now-sync config.`);
     }
   });
 

@@ -1,8 +1,8 @@
-const chalk = require('chalk');
 const _ = require('lodash');
 const path = require('path');
 
 const { get } = require('./api');
+const { logError, logInfo } = require('./logging');
 const { parseConfigFile } = require('./config');
 
 /**
@@ -30,8 +30,7 @@ function getInstanceVersion() {
       };
     })
     .catch(err => {
-      const errorMsg = chalk.bold.red(`\n${err.toString()}`);
-      console.error(errorMsg); // eslint-disable-line no-console
+      logError(`\n${err.toString()}`);
     });
 }
 exports.getInstanceVersion = getInstanceVersion;
@@ -73,7 +72,7 @@ ${getInfoLine(url, 'URL')}
   const infoStrJoined = `${infoStrArr.join('\n')}
 `;
 
-  console.log(`${infoStrStart}${infoStrJoined}`); // eslint-disable-line no-console
+  logInfo(`${infoStrStart}${infoStrJoined}`);
 }
 exports.printInfo = printInfo;
 

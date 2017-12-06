@@ -1,8 +1,8 @@
-const chalk = require('chalk');
 const mapValues = require('lodash/mapValues');
 const trim = require('lodash/trim');
 const { AUTH_FILE_NAME, CONFIG_FILE_NAME } = require('../constants');
 const { parseConfigFile } = require('../util/config');
+const { logInfo, logError } = require('../util/logging');
 
 module.exports = class CommandParser {
   constructor(args) {
@@ -18,11 +18,11 @@ module.exports = class CommandParser {
   }
 
   action() {
-    console.error(new Error('Should not instantiate base CommandParser.')); // eslint-disable-line no-console
+    logError('Should not instantiate base CommandParser.');
   }
 
   log(...args) {
-    console.log(...args); // eslint-disable-line no-console
+    logInfo(...args);
   }
 
   runAction() {
@@ -31,22 +31,20 @@ module.exports = class CommandParser {
       const configFileContents = parseConfigFile();
 
       if (!configFileContents) {
-        const errorMsg = chalk.bold.red(
+        logError(
           `${
             CONFIG_FILE_NAME
           } does not exist or is not readable. Run \`now config\` first.`
         );
-        console.error(errorMsg); // eslint-disable-line no-console
         return;
       }
 
       if (!authFileContents) {
-        const errorMsg = chalk.bold.red(
+        logError(
           `${
             AUTH_FILE_NAME
           } does not exist or is not readable. Run \`now config\` first.`
         );
-        console.error(errorMsg); // eslint-disable-line no-console
         return;
       }
 
