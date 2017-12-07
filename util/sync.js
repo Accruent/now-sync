@@ -1,5 +1,4 @@
 const fs = require('fs');
-const ora = require('ora');
 const path = require('path');
 const _ = require('lodash');
 const moment = require('moment');
@@ -18,7 +17,6 @@ const {
 } = require('./add');
 const { parseConfigFile } = require('./config');
 const { get } = require('./api');
-const { logInfo } = require('./logging');
 const {
   buildTableApiUrl,
   convertServiceNowDatetimeToMoment,
@@ -29,6 +27,27 @@ const {
 const readFileAsync = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 const statAsync = promisify(fs.stat);
+
+/**
+ * Initializes the Sync functionality.
+ *
+ * @returns {Promise.<Object.<string, [{ createdFiles: string[], updatedFiles: string[], updatedRecordFields: string[] }]>>}
+ */
+async function sync() {
+  const nonemptyRecords = getRecordsToSync();
+  const nonemptyTables = _.keys(nonemptyRecords);
+
+  const syncResponses = await Promise.all(
+    _.map(nonemptyTables, table => initSyncAllFilesForTable(table))
+  );
+
+  const tableResponsePairs = _.map(nonemptyTables, (table, i) => [
+    table,
+    syncResponses[i]
+  ]);
+  return _.fromPairs(tableResponsePairs);
+}
+exports.sync = sync;
 
 /**
  * Returns a promise resolving to all local file stats and file sysIds
@@ -181,37 +200,32 @@ exports.isFileNewerThanRecord = isFileNewerThanRecord;
  * @param {string} table ServiceNow table’s API Name
  * @returns {promise}
  */
-function initSyncAllFilesForTable(table) {
-  let savedFileStatsBySysIdByPath;
-  return getSyncedFileStatsForTable(table)
-    .then(({ fileStatsBySysIdByPath, missingFieldsBySysId }) => {
-      savedFileStatsBySysIdByPath = fileStatsBySysIdByPath;
-      const sysIds = _.concat(
-        _.keys(fileStatsBySysIdByPath),
-        _.keys(missingFieldsBySysId)
-      );
+async function initSyncAllFilesForTable(table) {
+  const {
+    fileStatsBySysIdByPath,
+    missingFieldsBySysId
+  } = await getSyncedFileStatsForTable(table);
 
-      if (!sysIds.length) {
-        throw new Error(`No local files found for table ${table}.`);
-      }
+  const savedFileStatsBySysIdByPath = fileStatsBySysIdByPath;
+  const sysIds = _.concat(
+    _.keys(fileStatsBySysIdByPath),
+    _.keys(missingFieldsBySysId)
+  );
 
-      return getSyncedRecordsForTable(table, _.uniq(sysIds));
-    })
-    .then(apiRecords => {
-      if (!apiRecords) {
-        throw new Error(
-          `The records for table \`${
-            table
-          }\` in the ServiceNow instance do not exist.`
-        );
-      }
+  if (!sysIds.length) {
+    throw new Error(`No local files found for table ${table}.`);
+  }
 
-      return syncAllFilesForTable(
-        table,
-        apiRecords,
-        savedFileStatsBySysIdByPath
-      );
-    });
+  const apiRecords = await getSyncedRecordsForTable(table, _.uniq(sysIds));
+  if (!apiRecords) {
+    throw new Error(
+      `The records for table \`${
+        table
+      }\` in the ServiceNow instance do not exist.`
+    );
+  }
+
+  return syncAllFilesForTable(table, apiRecords, savedFileStatsBySysIdByPath);
 }
 exports.initSyncAllFilesForTable = initSyncAllFilesForTable;
 
@@ -240,11 +254,11 @@ exports.syncAllFilesForTable = syncAllFilesForTable;
  * @param {object} fileStatsByPaths existing files sync’d to the ServiceNow record
  * @returns {Promise} Promise -> object with data to be uploaded and files to be written.
  */
-function calculateSyncRecordData(table, recordData, fileStatsByPaths) {
+async function calculateSyncRecordData(table, recordData, fileStatsByPaths) {
   const updatedOnMoment = convertServiceNowDatetimeToMoment(
     recordData.sys_updated_on
   );
-  const sync = {
+  const syncObj = {
     updateRecordData: {},
     filesToUpdate: {},
     missingFileFields: {}
@@ -271,19 +285,20 @@ function calculateSyncRecordData(table, recordData, fileStatsByPaths) {
           }
 
           if (isFileNewerThanRecord(fileObj.stats.mtime, updatedOnMoment)) {
-            sync.updateRecordData[fileObj.field] = fileContents;
+            syncObj.updateRecordData[fileObj.field] = fileContents;
           } else {
-            sync.filesToUpdate[matchingFilePath] = recordData[fileObj.field];
+            syncObj.filesToUpdate[matchingFilePath] = recordData[fileObj.field];
           }
         }
       );
       filePromises.push(readFile);
     } else {
-      sync.missingFileFields[key] = val;
+      syncObj.missingFileFields[key] = val;
     }
   });
 
-  return Promise.all(filePromises).then(() => sync);
+  await Promise.all(filePromises);
+  return syncObj;
 }
 exports.calculateSyncRecordData = calculateSyncRecordData;
 
@@ -322,35 +337,54 @@ exports.calculateSyncRecordData = calculateSyncRecordData;
  * })
  * @returns {promise}
  */
-function syncRecord(table, recordData, fileStatsByPaths) {
-  return calculateSyncRecordData(table, recordData, fileStatsByPaths).then(
-    syncData => {
-      const promises = _.map(syncData.filesToUpdate, (content, filePath) =>
-        writeFileAsync(filePath, content, 'utf8').then(() => {
-          logInfo(`Updated local file: ${trimCwd(filePath)}`);
-        })
-      );
-
-      if (!_.isEmpty(syncData.updateRecordData)) {
-        promises.push(
-          updateRecord(table, recordData.sys_id, syncData.updateRecordData)
-        );
-      }
-
-      if (!_.isEmpty(syncData.missingFileFields)) {
-        let filesToWrite = generateFilesToWriteForRecord(table, recordData);
-        filesToWrite = _.filter(
-          filesToWrite,
-          fileObj =>
-            typeof syncData.missingFileFields[fileObj.contentField] !==
-            'undefined'
-        );
-        promises.push(writeFilesForTable(table, filesToWrite));
-      }
-
-      return Promise.all(promises);
-    }
+async function syncRecord(table, recordData, fileStatsByPaths) {
+  const syncData = await calculateSyncRecordData(
+    table,
+    recordData,
+    fileStatsByPaths
   );
+
+  let createdFiles = [];
+  const updatedFiles = [];
+  const updatedRecordFields = [];
+
+  const promises = _.map(syncData.filesToUpdate, (content, filePath) =>
+    writeFileAsync(filePath, content, 'utf8').then(() => {
+      updatedFiles.push(trimCwd(filePath));
+      // logInfo(`Updated local file: ${trimCwd(filePath)}`);
+    })
+  );
+
+  if (!_.isEmpty(syncData.updateRecordData)) {
+    promises.push(
+      updateRecord(table, recordData.sys_id, syncData.updateRecordData).then(
+        ({ body, response }) => {
+          updatedRecordFields.push({ body, response });
+        }
+      )
+    );
+  }
+
+  if (!_.isEmpty(syncData.missingFileFields)) {
+    let filesToWrite = generateFilesToWriteForRecord(table, recordData);
+    filesToWrite = _.filter(
+      filesToWrite,
+      fileObj =>
+        typeof syncData.missingFileFields[fileObj.contentField] !== 'undefined'
+    );
+    promises.push(
+      writeFilesForTable(table, filesToWrite).then(filesWritten => {
+        createdFiles = createdFiles.concat(filesWritten);
+      })
+    );
+  }
+
+  await Promise.all(promises);
+  return {
+    createdFiles,
+    updatedFiles,
+    updatedRecordFields
+  };
 }
 exports.syncRecord = syncRecord;
 
@@ -417,33 +451,34 @@ exports.pull = pull;
  * @returns {promise<object[]>} The JSON responses of the update calls
  */
 async function push() {
-  const spinner = ora('Pushing file content to ServiceNow...').start();
-
   const tableNames = _.keys(getRecordsToSync());
   const syncedFileStats = await Promise.map(tableNames, table =>
     getSyncedFileStatsForTable(table)
   );
+  const tableUpdates = {};
 
-  return Promise.map(tableNames, (table, i) => {
-    const { fileStatsBySysIdByPath } = syncedFileStats[i];
-    const sysIds = _.keys(fileStatsBySysIdByPath);
+  try {
+    await Promise.map(tableNames, async (table, i) => {
+      const { fileStatsBySysIdByPath } = syncedFileStats[i];
+      const sysIds = _.keys(fileStatsBySysIdByPath);
 
-    return Promise.map(sysIds, sysId => {
-      const fileStatsByPath = fileStatsBySysIdByPath[sysId];
-      const updateRecordData = {};
+      const updateRecordResponses = await Promise.map(sysIds, async sysId => {
+        const fileStatsByPath = fileStatsBySysIdByPath[sysId];
+        const updateRecordData = {};
 
-      return Promise.map(_.keys(fileStatsByPath), filePath =>
-        readFileAsync(filePath, 'utf8').then(fileContent => {
-          updateRecordData[fileStatsByPath[filePath].field] = fileContent;
-        })
-      ).then(() => updateRecord(table, sysId, updateRecordData));
+        await Promise.map(_.keys(fileStatsByPath), filePath =>
+          readFileAsync(filePath, 'utf8').then(fileContent => {
+            updateRecordData[fileStatsByPath[filePath].field] = fileContent;
+          })
+        );
+        return updateRecord(table, sysId, updateRecordData);
+      });
+
+      tableUpdates[table] = updateRecordResponses;
     });
-  })
-    .catch(e => {
-      throw e;
-    })
-    .finally(() => {
-      spinner.stop();
-    });
+  } catch (e) {
+    throw e;
+  }
+  return tableUpdates;
 }
 exports.push = push;

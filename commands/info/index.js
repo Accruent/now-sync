@@ -5,6 +5,7 @@ const {
   getInstanceVersion,
   printInfo
 } = require('../../util/info');
+const { logInfo, logError } = require('../../util/logging');
 
 module.exports = class Info extends CommandParser {
   constructor(args) {
@@ -13,17 +14,25 @@ module.exports = class Info extends CommandParser {
     this.requiresConfigFile = true;
   }
 
-  action() {
+  async action() {
     const spinner = ora('Retrieving instance info...').start();
-    getInstanceVersion().then(response => {
+
+    try {
+      const response = await getInstanceVersion();
+
       if (response) {
         const { version, latency } = response;
-        printInfo({
+        const infoStr = printInfo({
           Version: formatVersion(version),
           Latency: latency
         });
+
+        logInfo(infoStr);
       }
-      spinner.stop();
-    });
+    } catch (e) {
+      logError(`\n${e.toString()}`);
+    }
+
+    spinner.stop();
   }
 };

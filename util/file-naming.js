@@ -11,6 +11,28 @@ const replaceFileNameRe = [
 // characters found in the record name that will throw an error
 const errorFileNameRe = [/\//g];
 
+// replaces periods with this string when parsing information from file templates so that reference field values can be properly interpreted.
+const FAULTY_PATHTOREGEXP_DELIMITER_STR = ['XYZ', /XYZ/g];
+
+/**
+ * Replaces a file template’s periods (except the last one, which is used for file extension separation) with a string, so that pathToRegExp doesn’t misinterpret a reference field with a separate field.
+ *
+ * @param {string} fileTemplate The file template string
+ * @returns {string} The updated file template string with periods replaced with FAULTY_PATHTOREGEXP_DELIMITER_STR
+ */
+function getSafeFileTemplate(fileTemplate) {
+  const templateLastPeriodIndex = fileTemplate.lastIndexOf('.');
+
+  return fileTemplate.replace(
+    /\./g,
+    (char, index) =>
+      // replace . with FAULTY_PATHTOREGEXP_DELIMITER_STR (if it's not the last period separating the file extension)
+      index === templateLastPeriodIndex
+        ? char
+        : FAULTY_PATHTOREGEXP_DELIMITER_STR[0]
+  );
+}
+
 /**
  * Compiles a now-sync file name using a given file template and record data.
  *
@@ -19,13 +41,18 @@ const errorFileNameRe = [/\//g];
  * @returns {string} The compiled file name.
  */
 function compileFileName(fileTemplate, data) {
-  const tokens = pathToRegexp.parse(fileTemplate, { delimiter: '-' });
+  // we need to replace non-filename-extension period characters with a temporary string for the time being that won’t be detected as a delimiter in pathToRegexp (so that field values of reference fields can be used for file naming)
+  const safeFileTemplate = getSafeFileTemplate(fileTemplate);
+
+  const tokens = pathToRegexp.parse(safeFileTemplate, { delimiter: '-' });
   const fileNameFragments = _.map(tokens, token => {
     if (typeof token === 'string') {
       return token;
     }
 
-    let tokenFromData = data[token.name];
+    // switch back to . instead of FAULTY_PATHTOREGEXP_DELIMITER_STR
+    let tokenFromData =
+      data[token.name.replace(FAULTY_PATHTOREGEXP_DELIMITER_STR[1], '.')];
     let i;
     for (i = 0; i < errorFileNameRe.length; i++) {
       const errorFileNameReExec = errorFileNameRe[i].exec(tokenFromData);
@@ -58,6 +85,20 @@ function compileFileName(fileTemplate, data) {
   return fileNameFragments.join('');
 }
 exports.compileFileName = compileFileName;
+
+/**
+ * Creates the file template string used for file naming given an array of record field names used for file naming, the actual field name represented by the file content, and the file extension
+ *
+ * @param {string[]} nameFields field names used for naming the file
+ * @param {string} fieldName the actual field name of the record whose value contains the file content
+ * @param {string} extension file extension (example: 'js')
+ * @returns {string} compiled file template
+ */
+function compileFileTemplate(nameFields, fieldName, extension) {
+  const filenamePrefix = _.map(nameFields, name => `:${name}`).join('-');
+  return `${filenamePrefix}-${fieldName}-:sys_id.${extension}`;
+}
+exports.compileFileTemplate = compileFileTemplate;
 
 /**
  * Retrieves all record fields used for naming files for a specific table.
@@ -113,7 +154,9 @@ exports.getFileNameFields = getFileNameFields;
  */
 function getFieldValuesFromFileName(fileName, fileTemplate) {
   const templateKeys = [];
-  const templateTokens = pathToRegexp(fileTemplate, templateKeys, {
+  // we need to replace non-filename-extension period characters with a temporary string for the time being that won’t be detected as a delimiter in pathToRegexp (so that field values of reference fields can be used for file naming)
+  const safeFileTemplate = getSafeFileTemplate(fileTemplate);
+  const templateTokens = pathToRegexp(safeFileTemplate, templateKeys, {
     delimiter: '-'
   });
   const fieldValues = templateTokens.exec(fileName);
@@ -121,6 +164,12 @@ function getFieldValuesFromFileName(fileName, fileTemplate) {
   fieldValues.shift(); // first element is just the file name
 
   const matches = {};
+
+  // replacing the temporary string with .
+  _.forEach(templateKeys, token => {
+    token.name = token.name.replace(FAULTY_PATHTOREGEXP_DELIMITER_STR[1], '.');
+  });
+
   _.forEach(fieldValues, (value, i) => {
     matches[templateKeys[i].name] = value;
   });

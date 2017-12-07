@@ -2,6 +2,8 @@ const _ = require('lodash');
 const inquirer = require('inquirer');
 const CommandParser = require('../command-parser');
 const { saveConfigFile } = require('../../util/config');
+const { compileFileTemplate } = require('../../util/file-naming');
+const { logInfo } = require('../../util/logging');
 
 module.exports = class Config extends CommandParser {
   constructor(args) {
@@ -20,17 +22,17 @@ module.exports = class Config extends CommandParser {
       promptFileFields
     } = await this.initialPrompt(this.args);
 
-    const finalTable = table || promptTable;
+    const finalTable = (table || promptTable).toLowerCase();
     const finalNameField = nameField || promptNameField;
     const finalFileFields = fileFields || promptFileFields;
     const finalConfirm = confirm || promptConfirm;
 
-    if (!finalConfirm) {
+    if (finalConfirm === false) {
       return;
     }
 
     const fileFieldNames = _.map(finalFileFields.split(','), fileField =>
-      fileField.trim()
+      fileField.trim().toLowerCase()
     );
     const extensionQuestions = [];
     _.forEach(fileFieldNames, fieldName => {
@@ -46,7 +48,7 @@ module.exports = class Config extends CommandParser {
 
     const extensions = await inquirer.prompt(extensionQuestions);
     const formattedNameFields = _.map(finalNameField.split(','), name =>
-      name.trim()
+      name.trim().toLowerCase()
     );
 
     this.config.config[table] = {
@@ -55,18 +57,19 @@ module.exports = class Config extends CommandParser {
     };
     this.config.records[table] = [];
 
-    const filenamePrefix = _.map(formattedNameFields, name => `:${name}`).join(
-      '-'
-    );
-
     _.forEach(fileFieldNames, field => {
       this.config.config[finalTable].formats.push({
-        fileName: `${filenamePrefix}-${field}-:sys_id.${extensions[field]}`,
+        fileName: compileFileTemplate(
+          formattedNameFields,
+          field,
+          extensions[field]
+        ),
         contentField: field
       });
     });
 
     saveConfigFile(this.config);
+    logInfo(`Created config for table ${finalTable}.`);
   }
 
   initialPrompt({ table, nameField, fileFields, confirm }) {

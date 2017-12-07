@@ -6,7 +6,6 @@ const Promise = require('bluebird');
 
 const { getFieldValuesFromFileName } = require('./file-naming');
 const { parseConfigFile, saveConfigFile } = require('./config');
-const { logError, logInfo } = require('./logging');
 const { updateRecord } = require('./service-now');
 
 const readFileAsync = Promise.promisify(fs.readFile);
@@ -19,7 +18,7 @@ const readFileAsync = Promise.promisify(fs.readFile);
  *
  * @returns {chokidar} A chokidar watcher instance
  */
-function watch() {
+function watch(cb) {
   let config = parseConfigFile();
   const dir = path.resolve(process.cwd(), config.filePath);
 
@@ -29,7 +28,7 @@ function watch() {
   });
 
   watcher.on('ready', () => {
-    logInfo(`Watching ${config.filePath} for changes...`);
+    cb(null, 'ready');
   });
 
   // Used for storing the file’s mtime (last modified time) before changes are made.
@@ -40,9 +39,11 @@ function watch() {
   watcher.on('add', (watchPath, stats) => {
     config = parseConfigFile();
     fileStats[watchPath] = stats;
+
+    cb(null, 'add', stats);
   });
 
-  watcher.on('change', (watchPath, stats) => {
+  watcher.on('change', async (watchPath, stats) => {
     const relativePath = watchPath.substr(dir.length + 1).split('/');
     const table = relativePath[0];
     const file = relativePath[1];
@@ -52,14 +53,15 @@ function watch() {
       record => record.fileName === file
     );
     if (!fileConfig) {
-      logError(
-        `Could not find a file configuration matching table record on ${
-          table
-        }: ${
-          file
-        }. Make sure that configuration exists in your .now-sync.yml file. If it does not exist, run \`now add\` to add the file configuration.`
+      cb(
+        new Error(
+          `Could not find a file configuration matching table record on ${
+            table
+          }: ${
+            file
+          }. Make sure that configuration exists in your .now-sync.yml file. If it does not exist, run \`now add\` to add the file configuration.`
+        )
       );
-
       return;
     }
 
@@ -70,16 +72,21 @@ function watch() {
     );
     const fieldValues = getFieldValuesFromFileName(file, fileTemplate);
 
-    readFileAsync(watchPath, 'utf8')
-      .then(fileContents => {
-        const uploadBody = {};
-        uploadBody[contentField] = fileContents;
+    const fileContents = await readFileAsync(watchPath, 'utf8');
+    const uploadBody = {};
+    uploadBody[contentField] = fileContents;
+    const updateRecordResponse = await updateRecord(
+      table,
+      fieldValues.sys_id,
+      uploadBody
+    );
+    fileStats[watchPath] = stats;
 
-        return updateRecord(table, fieldValues.sys_id, uploadBody);
-      })
-      .then(() => {
-        fileStats[watchPath] = stats;
-      });
+    cb(null, 'change', stats, {
+      table,
+      sysId: fieldValues.sys_id,
+      body: updateRecordResponse.body
+    });
   });
 
   watcher.on('unlink', watchPath => {
@@ -100,7 +107,7 @@ function watch() {
       configRecords.splice(configRecordIndex, 1);
 
       saveConfigFile(config);
-      logInfo(`Removed "${table}/${file}" from now-sync config.`);
+      cb(null, 'unlink', null, { path: watchPath, table, file });
     }
   });
 
