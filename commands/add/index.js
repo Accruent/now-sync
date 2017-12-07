@@ -2,7 +2,7 @@ const _ = require('lodash');
 const inquirer = require('inquirer');
 const CommandParser = require('../command-parser');
 const { add } = require('../../util/add');
-const { logInfo } = require('../../util/logging');
+const { logInfo, logError } = require('../../util/logging');
 
 module.exports = class Create extends CommandParser {
   constructor(args) {
@@ -46,10 +46,14 @@ module.exports = class Create extends CommandParser {
       }
     }
 
-    const filesWritten = await add(table, id);
-    logInfo('Files written:');
-    _.forEach(filesWritten, filePath => {
-      logInfo(`  ${filePath}`);
-    });
+    try {
+      const filesWritten = await add(table, id);
+      logInfo('Files written:');
+      _.forEach(filesWritten, filePath => {
+        logInfo(`  ${filePath}`);
+      });
+    } catch (e) {
+      logError(e);
+    }
   }
 };

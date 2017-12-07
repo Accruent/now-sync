@@ -155,11 +155,27 @@ function getRecord(table, sysId, fields) {
       return record;
     })
     .catch(e => {
-      throw new Error(
-        `An error occurred when retrieving record information: ${table}.${
-          sysId
-        }.\n${e}`
-      );
+      let errorMsg;
+
+      switch (e.name) {
+        case 'TypeError': {
+          errorMsg = `Record ${table}.${sysId} not found.`;
+          break;
+        }
+
+        default: {
+          errorMsg = `An error occurred when retrieving record ${table}.${
+            sysId
+          }: ${e}`;
+          break;
+        }
+      }
+
+      const formattedError = new Error(errorMsg);
+      formattedError.stack = e.stack;
+      formattedError.name = e.name;
+
+      throw formattedError;
     });
 }
 exports.getRecord = getRecord;
