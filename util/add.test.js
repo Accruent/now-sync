@@ -20,7 +20,7 @@ describe('getFieldValues', () => {
       expect(sysId).toBe(exampleSysId);
 
       return Promise.resolve({
-        'sys_scope.scope': exampleScope
+        sys_scope: exampleScope
       });
     });
 
@@ -44,7 +44,7 @@ describe('getFieldValues', () => {
 
       return Promise.resolve({
         name: 'test',
-        'web_service_definition.service_id': wsDef
+        web_service_definition: wsDef
       });
     });
 
