@@ -202,10 +202,11 @@ exports.sys_ui_script = {
 
 // Script REST Resources
 exports.sys_ws_operation = {
-  nameField: ['web_service_definition', 'name'],
+  nameField: ['web_service_definition', 'name', 'http_method'],
   formats: [
     {
-      fileName: ':web_service_definition-:name-operation_script-:sys_id.js',
+      fileName:
+        ':web_service_definition-:name-:http_method-operation_script-:sys_id.js',
       contentField: 'operation_script'
     }
   ]
