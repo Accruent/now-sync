@@ -2,7 +2,6 @@ const _ = require('lodash');
 const moment = require('moment');
 
 const { get, put } = require('./api');
-const { logInfo } = require('./logging');
 const { parseConfigFile } = require('./config');
 
 /**
@@ -181,14 +180,11 @@ async function updateRecord(table, sysId, body) {
     body: JSON.stringify(filteredBody)
   };
 
-  const call = await put(url, opts);
+  const response = await put(url, opts);
 
-  logInfo(
-    `Updated ServiceNow record: ${table}/${sysId} with fields: ${_.keys(
-      filteredBody
-    ).join(', ')}`
-  );
-
-  return call;
+  return {
+    response,
+    body
+  };
 }
 exports.updateRecord = updateRecord;

@@ -26,9 +26,6 @@ rules:
     - warn
   func-names:
     - warn
-  indent:
-    - error
-    - 2
   key-spacing:
     - error
     - mode: minimum

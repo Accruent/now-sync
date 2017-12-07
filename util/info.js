@@ -2,7 +2,6 @@ const _ = require('lodash');
 const path = require('path');
 
 const { get } = require('./api');
-const { logError, logInfo } = require('./logging');
 const { parseConfigFile } = require('./config');
 
 /**
@@ -30,7 +29,7 @@ function getInstanceVersion() {
       };
     })
     .catch(err => {
-      logError(`\n${err.toString()}`);
+      throw err;
     });
 }
 exports.getInstanceVersion = getInstanceVersion;
@@ -58,6 +57,7 @@ exports.formatVersion = formatVersion;
  * Prints out information regarding the ServiceNow instance to the console.
  *
  * @param {object} info An object with information about the instance
+ * @return {string} the info string
  */
 function printInfo(info) {
   const { url } = parseConfigFile(true);
@@ -71,8 +71,7 @@ ${getInfoLine(url, 'URL')}
   const infoStrArr = _.map(info, getInfoLine);
   const infoStrJoined = `${infoStrArr.join('\n')}
 `;
-
-  logInfo(`${infoStrStart}${infoStrJoined}`);
+  return `${infoStrStart}${infoStrJoined}`;
 }
 exports.printInfo = printInfo;
 

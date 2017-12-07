@@ -5,6 +5,7 @@ const {
   generateAuthConfig,
   saveConfigFile
 } = require('../../util/config');
+const { logInfo } = require('../../util/logging');
 
 module.exports = class Config extends CommandParser {
   async action() {
@@ -22,11 +23,16 @@ module.exports = class Config extends CommandParser {
     const finalPassword = password || promptPassword;
     const finalFilePath = filePath || promptFilePath;
 
-    saveConfigFile(generateConfig(finalFilePath));
-    saveConfigFile(
+    let configFilePath;
+
+    configFilePath = saveConfigFile(generateConfig(finalFilePath));
+    logInfo(`Created/updated \`${configFilePath}\``);
+
+    configFilePath = saveConfigFile(
       generateAuthConfig(finalHost, finalUser, finalPassword),
       true
     );
+    logInfo(`Created/updated \`${configFilePath}\``);
   }
 
   prompt({ instanceUrl, username, password, filePath }) {

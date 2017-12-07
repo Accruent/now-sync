@@ -3,7 +3,6 @@ const _ = require('lodash');
 const yaml = require('js-yaml');
 const { AUTH_FILE_PATH, CONFIG_FILE_PATH } = require('./../constants');
 const defaultConfig = require('../constants/default-config');
-const { logInfo } = require('./logging');
 
 /**
  * Generates a JSON object for the file configs.
@@ -66,7 +65,7 @@ exports.parseConfigFile = parseConfigFile;
  *
  * @param {object} configJson The config JSON object
  * @param {boolean} isAuth Whether to save to the auth config file or not
- * @returns {undefined}
+ * @returns {string} config file path
  */
 function saveConfigFile(configJson, isAuth) {
   if (!configJson) {
@@ -76,6 +75,6 @@ function saveConfigFile(configJson, isAuth) {
   const configFilePath = isAuth ? AUTH_FILE_PATH : CONFIG_FILE_PATH;
 
   fs.writeFileSync(configFilePath, yaml.safeDump(configJson));
-  logInfo(`Created/updated \`${configFilePath}\``);
+  return configFilePath;
 }
 exports.saveConfigFile = saveConfigFile;
