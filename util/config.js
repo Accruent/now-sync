@@ -74,7 +74,44 @@ function saveConfigFile(configJson, isAuth) {
 
   const configFilePath = isAuth ? AUTH_FILE_PATH : CONFIG_FILE_PATH;
 
-  fs.writeFileSync(configFilePath, yaml.safeDump(configJson));
+  fs.writeFileSync(configFilePath, yaml.safeDump(sortConfig(configJson)));
   return configFilePath;
 }
 exports.saveConfigFile = saveConfigFile;
+
+function sortConfig(configJson) {
+  if (_.isPlainObject(configJson)) {
+    const keys = _.sortBy(_.keys(configJson));
+    let i;
+
+    const newConfig = {};
+    for (i = 0; i < keys.length; i++) {
+      const key = keys[i];
+
+      if (typeof configJson[key] === 'object') {
+        newConfig[key] = sortConfig(configJson[key]);
+      } else {
+        newConfig[key] = configJson[key];
+      }
+    }
+
+    return newConfig;
+  } else if (_.isArray(configJson) && configJson.length) {
+    switch (typeof configJson[0]) {
+      case 'string': {
+        return _.sortBy(configJson);
+      }
+
+      case 'object': {
+        const newConfig = _.map(configJson, sortConfig);
+        return _.sortBy(newConfig, ['fileName']);
+      }
+
+      default:
+        break;
+    }
+  }
+
+  return configJson;
+}
+exports.sortConfig = sortConfig;
