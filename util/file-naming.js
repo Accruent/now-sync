@@ -161,6 +161,13 @@ function getFieldValuesFromFileName(fileName, fileTemplate) {
   });
   const fieldValues = templateTokens.exec(fileName);
 
+  if (!fieldValues) {
+    throw new Error(
+      `File name \`${fileName}\` does not match file template: \`${
+        fileTemplate
+      }\``
+    );
+  }
   fieldValues.shift(); // first element is just the file name
 
   const matches = {};
