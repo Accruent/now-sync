@@ -11,9 +11,9 @@ const defaultConfig = require('../constants/default-config');
  * @returns {object} The file config object
  */
 function generateConfig(filePath) {
-  const finalConfig = _.assign({}, defaultConfig, { filePath });
-
   const config = parseConfigFile();
+  const finalConfig = _.merge({}, config || {}, defaultConfig, { filePath });
+
   if (config) {
     finalConfig.records = config.records;
   }

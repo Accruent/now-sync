@@ -35,10 +35,10 @@ module.exports = class Config extends CommandParser {
     logInfo(`Created/updated \`${configFilePath}\``);
   }
 
-  prompt({ instanceUrl, username, password, filePath }) {
+  prompt({ host, user, password, filePath }) {
     const questions = [];
 
-    if (!instanceUrl) {
+    if (!host) {
       questions.push({
         name: 'promptHost',
         type: 'input',
@@ -48,7 +48,7 @@ module.exports = class Config extends CommandParser {
       });
     }
 
-    if (!username) {
+    if (!user) {
       questions.push({
         name: 'promptUser',
         type: 'input',
