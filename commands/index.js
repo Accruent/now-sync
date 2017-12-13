@@ -1,3 +1,4 @@
+const check = require('./check');
 const config = require('./config');
 const addTable = require('./add-table');
 const add = require('./add');
@@ -10,6 +11,12 @@ const sync = require('./sync');
 const watch = require('./watch');
 
 module.exports = {
+  check: {
+    command: ['check'],
+    describe: 'Checks for any config errors',
+    CommandClass: check
+  },
+
   config: {
     command: ['config', 'init', 'c'],
     describe: 'Initiates config for current folder (run this first)',
