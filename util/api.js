@@ -21,15 +21,7 @@ function get(url, opts) {
   const options = merge({}, generateBaseOptions(), opts);
   options.method = 'GET';
 
-  if (typeof fetch === 'function') {
-    return fetch(url, options)
-      .then(stream => stream.json())
-      .catch(err => {
-        throw err;
-      });
-  }
-
-  throw new Error('fetch isn’t a function?!');
+  return fetchJson(url, options);
 }
 exports.get = get;
 
@@ -37,15 +29,7 @@ function post(url, opts) {
   const options = merge({}, generateBaseOptions(), opts);
   options.method = 'POST';
 
-  if (typeof fetch === 'function') {
-    return fetch(url, options)
-      .then(stream => stream.json())
-      .catch(err => {
-        throw err;
-      });
-  }
-
-  throw new Error('fetch isn’t a function?!');
+  return fetchJson(url, options);
 }
 exports.post = post;
 
@@ -53,14 +37,24 @@ function put(url, opts) {
   const options = merge({}, generateBaseOptions(), opts);
   options.method = 'PUT';
 
+  return fetchJson(url, options);
+}
+exports.put = put;
+
+async function fetchJson(url, options) {
   if (typeof fetch === 'function') {
-    return fetch(url, options)
-      .then(stream => stream.json())
-      .catch(err => {
-        throw err;
-      });
+    const stream = await fetch(url, options);
+    try {
+      const json = await stream.json();
+      return json;
+    } catch (e) {
+      if (stream.status !== 200) {
+        throw new Error(stream.statusText);
+      }
+
+      throw e;
+    }
   }
 
   throw new Error('fetch isn’t a function?!');
 }
-exports.put = put;

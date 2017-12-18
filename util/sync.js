@@ -456,13 +456,15 @@ async function push() {
     getSyncedFileStatsForTable(table)
   );
   const tableUpdates = {};
+  const numConcurrentUpdates = 48;
+  const recordsToUpdate = [];
 
   try {
     await Promise.map(tableNames, async (table, i) => {
       const { fileStatsBySysIdByPath } = syncedFileStats[i];
       const sysIds = _.keys(fileStatsBySysIdByPath);
 
-      const updateRecordResponses = await Promise.map(sysIds, async sysId => {
+      const tableRecordsToUpdate = await Promise.map(sysIds, async sysId => {
         const fileStatsByPath = fileStatsBySysIdByPath[sysId];
         const updateRecordData = {};
 
@@ -471,11 +473,32 @@ async function push() {
             updateRecordData[fileStatsByPath[filePath].field] = fileContent;
           })
         );
-        return updateRecord(table, sysId, updateRecordData);
+        return { table, sysId, updateRecordData };
       });
-
-      tableUpdates[table] = updateRecordResponses;
+      recordsToUpdate.push(...tableRecordsToUpdate);
     });
+
+    const chunkedRecordsToUpdate = _.chunk(
+      recordsToUpdate,
+      numConcurrentUpdates
+    );
+    let i;
+    for (i = 0; i < chunkedRecordsToUpdate.length; i++) {
+      // wait for chunk to finish before starting next round
+      // eslint-disable-next-line no-await-in-loop
+      await Promise.map(
+        chunkedRecordsToUpdate[i],
+        ({ table, sysId, updateRecordData }) => {
+          if (!tableUpdates[table]) {
+            tableUpdates[table] = [];
+          }
+          return updateRecord(table, sysId, updateRecordData).then(response => {
+            tableUpdates[table].push(response);
+            return response;
+          });
+        }
+      );
+    }
   } catch (e) {
     throw e;
   }
