@@ -1,6 +1,6 @@
 {
   "name": "now-sync",
-  "version": "0.12.2",
+  "version": "0.12.3",
   "description": "A tool to help developers sync their JavaScript resources with ServiceNow.",
   "main": "index.js",
   "scripts": {
