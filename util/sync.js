@@ -5,6 +5,7 @@ const moment = require('moment');
 const { promisify } = require('util');
 const Promise = require('bluebird');
 
+const { NUM_CONCURRENT_REQUESTS } = require('../constants');
 const {
   getFieldValuesFromFileName,
   getFileNameFields,
@@ -388,12 +389,12 @@ async function syncRecord(table, recordData, fileStatsByPaths) {
 }
 exports.syncRecord = syncRecord;
 
-function pull() {
+async function pull() {
   const { config } = parseConfigFile();
   const recordsByTable = getRecordsToSync();
 
   const tableNames = _.keys(recordsByTable);
-  const getRecordPromises = [];
+  let getRecordPromises = [];
   const recordsToPullByTable = {};
   let i;
 
@@ -422,26 +423,42 @@ function pull() {
     }
   }
 
-  // getting record data
+  // preparing api requests
+  const getRecordObjs = [];
   for (i = 0; i < tableNames.length; i++) {
     const table = tableNames[i];
     const tableRecordsToPull = recordsToPullByTable[table];
+    const fields = getFieldsToRetrieve(table);
 
     let j;
     for (j = 0; j < tableRecordsToPull.length; j++) {
       const sysId = tableRecordsToPull[j];
+      getRecordObjs.push({
+        table,
+        sysId,
+        fields
+      });
+    }
+  }
 
-      getRecordPromises.push(
-        getRecord(table, sysId, getFieldsToRetrieve(table)).then(recordData => {
+  // getting record data
+  const chunkedRecordObjs = _.chunk(getRecordObjs, NUM_CONCURRENT_REQUESTS);
+  for (i = 0; i < chunkedRecordObjs.length; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    const chunkedRecordRequest = await Promise.map(
+      chunkedRecordObjs[i],
+      ({ table, sysId, fields }) =>
+        getRecord(table, sysId, fields).then(recordData => {
           // write files
           const filesToWrite = generateFilesToWriteForRecord(table, recordData);
           return writeFilesForTable(table, filesToWrite);
         })
-      );
-    }
+    );
+
+    getRecordPromises = getRecordPromises.concat(chunkedRecordRequest);
   }
 
-  return Promise.all(getRecordPromises);
+  return getRecordPromises;
 }
 exports.pull = pull;
 
@@ -456,7 +473,6 @@ async function push() {
     getSyncedFileStatsForTable(table)
   );
   const tableUpdates = {};
-  const numConcurrentUpdates = 48;
   const recordsToUpdate = [];
 
   try {
@@ -480,7 +496,7 @@ async function push() {
 
     const chunkedRecordsToUpdate = _.chunk(
       recordsToUpdate,
-      numConcurrentUpdates
+      NUM_CONCURRENT_REQUESTS
     );
     let i;
     for (i = 0; i < chunkedRecordsToUpdate.length; i++) {

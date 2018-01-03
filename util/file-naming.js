@@ -60,7 +60,7 @@ function compileFileName(fileTemplate, data) {
         throw new Error(
           `Invalid character "${
             errorFileNameReExec[0]
-          }" found in the record’s \`${
+          }" found in the record’s (${data.sys_id}) \`${
             token.name
           }\` field. Change your record’s \`${
             token.name
