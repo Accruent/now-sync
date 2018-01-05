@@ -1,7 +1,7 @@
 {
   "name": "now-sync",
   "author": "Kai Yao",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A tool to help developers sync their JavaScript resources with ServiceNow.",
   "keywords": [
     "servicenow",
