@@ -1,5 +1,6 @@
 {
   "name": "now-sync",
+  "author": "Kai Yao",
   "version": "1.0.1",
   "description": "A tool to help developers sync their JavaScript resources with ServiceNow.",
   "keywords": [
@@ -8,6 +9,9 @@
     "sync",
     "service-now"
   ],
+  "homepage": "https://github.com/theconnectiv/now-sync",
+  "bugs": "https://github.com/theconnectiv/now-sync/issues",
+  "license": "MIT",
   "main": "index.js",
   "scripts": {
     "lint": "eslint \"**/*.js\"",
@@ -22,8 +26,6 @@
     "postmerge": "npm run git:changed && yarn install || npm run git:nochangedmsg",
     "precommit": "lint-staged"
   },
-  "author": "Kai Yao",
-  "license": "MIT",
   "bin": {
     "now": "bin/now"
   },
