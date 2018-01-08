@@ -42,7 +42,6 @@
     "ora": "^1.3.0",
     "path-to-regexp": "^2.1.0",
     "roadrunner": "^1.1.0",
-    "rx": "^4.1.0",
     "yargs": "^10.0.3"
   },
   "devDependencies": {

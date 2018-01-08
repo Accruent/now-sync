@@ -196,11 +196,16 @@ async function updateRecord(table, sysId, body) {
     body: JSON.stringify(filteredBody)
   };
 
-  const response = await put(url, opts);
-
-  return {
-    response,
-    body
-  };
+  try {
+    const response = await put(url, opts);
+    return {
+      response,
+      body,
+      table,
+      sysId
+    };
+  } catch (e) {
+    throw e;
+  }
 }
 exports.updateRecord = updateRecord;

@@ -484,11 +484,16 @@ async function push() {
         const fileStatsByPath = fileStatsBySysIdByPath[sysId];
         const updateRecordData = {};
 
-        await Promise.map(_.keys(fileStatsByPath), filePath =>
-          readFileAsync(filePath, 'utf8').then(fileContent => {
-            updateRecordData[fileStatsByPath[filePath].field] = fileContent;
-          })
-        );
+        try {
+          await Promise.map(_.keys(fileStatsByPath), filePath =>
+            readFileAsync(filePath, 'utf8').then(fileContent => {
+              updateRecordData[fileStatsByPath[filePath].field] = fileContent;
+            })
+          );
+        } catch (e) {
+          throw e;
+        }
+
         return { table, sysId, updateRecordData };
       });
       recordsToUpdate.push(...tableRecordsToUpdate);
