@@ -85,7 +85,7 @@ function watch(cb) {
     cb(null, 'change', stats, {
       table,
       sysId: fieldValues.sys_id,
-      body: updateRecordResponse.body
+      response: updateRecordResponse
     });
   });
 

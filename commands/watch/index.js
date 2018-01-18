@@ -24,12 +24,21 @@ module.exports = class Watch extends CommandParser {
         }
 
         case 'change': {
-          const { table, sysId, body } = data;
-          logInfo(
-            `Updated ServiceNow record: ${table}/${sysId} with fields: ${_.keys(
-              body
-            ).join(', ')}`
-          );
+          const { table, sysId, response } = data;
+
+          const { body, response: apiResponse } = response;
+          const { status, error } = apiResponse;
+
+          if (status === 'failure' || error) {
+            logError(`${error.message}: ${error.detail}`);
+          } else {
+            logInfo(
+              `Updated ServiceNow record: ${table}/${
+                sysId
+              } with fields: ${_.keys(body).join(', ')}`
+            );
+          }
+
           break;
         }
 
