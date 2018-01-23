@@ -51,11 +51,11 @@ module.exports = class Config extends CommandParser {
       name.trim().toLowerCase()
     );
 
-    this.config.config[table] = {
+    this.config.config[finalTable] = {
       nameField: formattedNameFields,
       formats: []
     };
-    this.config.records[table] = [];
+    this.config.records[finalTable] = [];
 
     _.forEach(fileFieldNames, field => {
       this.config.config[finalTable].formats.push({
