@@ -13,6 +13,7 @@
   "bugs": "https://github.com/theconnectiv/now-sync/issues",
   "license": "MIT",
   "main": "index.js",
+  "repository": "theconnectiv/now-sync",
   "scripts": {
     "lint": "eslint \"**/*.js\"",
     "lint:fix": "npm run lint -- --fix",
