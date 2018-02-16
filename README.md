@@ -40,7 +40,7 @@ Options:
 ## Quick Start
 
 1. Install [NodeJS](https://nodejs.org). Use [nvm](https://github.com/creationix/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) or [asdf](https://github.com/asdf-vm/asdf) if you’d like.
-1. Install this package: `yarn add now-sync` (or replace `yarn` with `npm`).
+1. Install this package: `yarn global add now-sync` (or `npm -g install now-sync`).
 1. Run `now config` to configure your local environment.
 1. Test your configuration by running `now info`.
 1. Run `now add` to add a record to sync.
