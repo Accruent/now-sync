@@ -168,7 +168,7 @@ exports.sys_ui_action = {
   nameField: 'name',
   formats: [
     {
-      fileName: ':name-script-:sys_id.js',
+      fileName: ':table-:name-script-:sys_id.js',
       contentField: 'script'
     }
   ]
