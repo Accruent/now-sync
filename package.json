@@ -31,17 +31,17 @@
     "now": "bin/now"
   },
   "dependencies": {
-    "bluebird": "^3.5.1",
+    "bluebird": "^3.5.2",
     "chalk": "^2.4.1",
-    "chokidar": "^2.0.3",
+    "chokidar": "^2.0.4",
     "inquirer": "^5.2.0",
-    "js-yaml": "^3.11.0",
-    "lodash": "^4.17.10",
+    "js-yaml": "^3.12.0",
+    "lodash": "^4.17.11",
     "mkdirp": "^0.5.1",
-    "moment": "^2.22.1",
+    "moment": "^2.22.2",
     "node-fetch": "^1.7.3",
     "ora": "^2.0.0",
-    "path-to-regexp": "^2.2.1",
+    "path-to-regexp": "^2.4.0",
     "roadrunner": "^1.1.0",
     "yargs": "^11.0.0"
   },
@@ -52,11 +52,11 @@
     "eslint-plugin-import": "^2.11.0",
     "eslint-plugin-jest": "^21.15.1",
     "husky": "^0.14.3",
-    "jest": "^22.4.3",
-    "lint-staged": "^7.0.5",
-    "prettier": "^1.12.1",
+    "jest": "^23.6.0",
+    "lint-staged": "^7.3.0",
+    "prettier": "^1.14.3",
     "rewire": "^4.0.1",
-    "yarn": "^1.6.0"
+    "yarn": "^1.9.4"
   },
   "engines": {
     "node": ">=8.0.0"

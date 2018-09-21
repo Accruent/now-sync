@@ -12,13 +12,7 @@ const defaultConfig = require('../constants/default-config');
  */
 function generateConfig(filePath) {
   const config = parseConfigFile();
-  const finalConfig = _.merge({}, config || {}, defaultConfig, { filePath });
-
-  if (config) {
-    finalConfig.records = config.records;
-  }
-
-  return finalConfig;
+  return _.merge({}, defaultConfig, config || {}, { filePath });
 }
 exports.generateConfig = generateConfig;
 
