@@ -9,7 +9,7 @@ const replaceFileNameRe = [
 ];
 
 // characters found in the record name that will throw an error
-const errorFileNameRe = [/\//g];
+const errorFileNameRe = [/\//g, /\\/g, /:/g];
 
 // replaces periods with this string when parsing information from file templates so that reference field values can be properly interpreted.
 const FAULTY_PATHTOREGEXP_DELIMITER_STR = ['XYZ', /XYZ/g];
@@ -163,9 +163,7 @@ function getFieldValuesFromFileName(fileName, fileTemplate) {
 
   if (!fieldValues) {
     throw new Error(
-      `File name \`${fileName}\` does not match file template: \`${
-        fileTemplate
-      }\``
+      `File name \`${fileName}\` does not match file template: \`${fileTemplate}\``
     );
   }
   fieldValues.shift(); // first element is just the file name
@@ -199,9 +197,7 @@ function trimCwd(filePath) {
 
   if (filePath.indexOf(cwd) !== 0) {
     throw new Error(
-      `Incorrect usage of trimCwd; cwd "${cwd}" not found in filePath "${
-        filePath
-      }"`
+      `Incorrect usage of trimCwd; cwd "${cwd}" not found in filePath "${filePath}"`
     );
   }
 

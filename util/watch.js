@@ -44,7 +44,7 @@ function watch(cb) {
   });
 
   watcher.on('change', async (watchPath, stats) => {
-    const relativePath = watchPath.substr(dir.length + 1).split('/');
+    const relativePath = watchPath.substr(dir.length + 1).split(path.sep);
     const table = relativePath[0];
     const file = relativePath[1];
 
@@ -55,11 +55,7 @@ function watch(cb) {
     if (!fileConfig) {
       cb(
         new Error(
-          `Could not find a file configuration matching table record on ${
-            table
-          }: ${
-            file
-          }. Make sure that configuration exists in your .now-sync.yml file. If it does not exist, run \`now add\` to add the file configuration.`
+          `Could not find a file configuration matching table record on ${table}: ${file}. Make sure that configuration exists in your .now-sync.yml file. If it does not exist, run \`now add\` to add the file configuration.`
         )
       );
       return;
@@ -93,7 +89,7 @@ function watch(cb) {
     delete fileStats[watchPath];
     config = parseConfigFile();
 
-    const relativePath = watchPath.substr(dir.length + 1).split('/');
+    const relativePath = watchPath.substr(dir.length + 1).split(path.sep);
     const table = relativePath[0];
     const file = relativePath[1];
 
