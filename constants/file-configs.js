@@ -165,10 +165,10 @@ exports.sys_script_include = {
 
 // UI Scripts
 exports.sys_ui_action = {
-  nameField: 'name',
+  nameField: 'action_name',
   formats: [
     {
-      fileName: ':table-:name-script-:sys_id.js',
+      fileName: ':table-:sys_scope-:action_name-script-:sys_id.js',
       contentField: 'script'
     }
   ]
