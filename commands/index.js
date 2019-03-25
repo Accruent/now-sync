@@ -38,8 +38,7 @@ module.exports = {
       },
       filePath: {
         alias: 'f',
-        describe: 'Folder to store ServiceNow files',
-        default: './now',
+        describe: 'Folder to store ServiceNow files (default: ./now)',
         type: 'string'
       }
     },
