@@ -3,6 +3,7 @@ const CommandParser = require('../command-parser');
 const {
   generateConfig,
   generateAuthConfig,
+  parseConfigFile,
   saveConfigFile
 } = require('../../util/config');
 const { logInfo } = require('../../util/logging');
@@ -37,6 +38,7 @@ module.exports = class Config extends CommandParser {
 
   prompt({ host, user, password, filePath }) {
     const questions = [];
+    const config = parseConfigFile();
 
     if (!host) {
       questions.push({
@@ -72,7 +74,7 @@ module.exports = class Config extends CommandParser {
         name: 'promptFilePath',
         type: 'input',
         message: 'In which folder should we sync files?',
-        default: './now',
+        default: config ? config.filePath : './now',
         store: true
       });
     }
