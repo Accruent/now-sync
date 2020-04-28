@@ -139,7 +139,12 @@ function getRecord(table, sysId, fields) {
   })}`;
 
   return get(url)
-    .then(response => response.result)
+    .then(response => {
+      if (response.error && response.error.detail) {
+        throw new Error(response.error.detail);
+      }
+      return response.result;
+    })
     .then(record => {
       if (record['sys_scope.scope']) {
         record.sys_scope = record['sys_scope.scope'];
@@ -164,9 +169,7 @@ function getRecord(table, sysId, fields) {
         }
 
         default: {
-          errorMsg = `An error occurred when retrieving record ${table}.${
-            sysId
-          }: ${e}`;
+          errorMsg = `An error occurred when retrieving record ${table}.${sysId}: ${e}`;
           break;
         }
       }

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const _ = require('lodash');
+const prettier = require('prettier');
 const yaml = require('js-yaml');
 const { AUTH_FILE_PATH, CONFIG_FILE_PATH } = require('./../constants');
 const defaultConfig = require('../constants/default-config');
@@ -29,7 +30,7 @@ function generateAuthConfig(instanceUrl, username, password) {
     url: instanceUrl,
     // TODO: OAuth support
     type: 'Basic',
-    key: Buffer.from(`${username}:${password}`).toString('base64')
+    key: Buffer.from(`${username}:${password}`).toString('base64'),
   };
 }
 exports.generateAuthConfig = generateAuthConfig;
@@ -67,8 +68,10 @@ function saveConfigFile(configJson, isAuth) {
   }
 
   const configFilePath = isAuth ? AUTH_FILE_PATH : CONFIG_FILE_PATH;
+  const configYamlStr = yaml.safeDump(sortConfig(configJson));
+  const prettyYamlStr = prettier.format(configYamlStr);
 
-  fs.writeFileSync(configFilePath, yaml.safeDump(sortConfig(configJson)));
+  fs.writeFileSync(configFilePath, prettyYamlStr);
   return configFilePath;
 }
 exports.saveConfigFile = saveConfigFile;
