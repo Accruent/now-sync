@@ -19,12 +19,12 @@ const readFileAsync = Promise.promisify(fs.readFile);
  * @returns {chokidar} A chokidar watcher instance
  */
 function watch(cb) {
-  let config = parseConfigFile();
+  const config = parseConfigFile();
   const dir = path.resolve(process.cwd(), config.filePath);
 
   const watcher = chokidar.watch(dir, {
     awaitWriteFinish: true,
-    ignored: /(^|[/\\])\../ // dotfiles
+    ignored: /(^|[/\\])\../, // dotfiles
   });
 
   watcher.on('ready', () => {
@@ -37,20 +37,20 @@ function watch(cb) {
   const fileStats = {};
 
   watcher.on('add', (watchPath, stats) => {
-    config = parseConfigFile();
     fileStats[watchPath] = stats;
 
     cb(null, 'add', stats);
   });
 
   watcher.on('change', async (watchPath, stats) => {
+    const latestConfig = parseConfigFile();
     const relativePath = watchPath.substr(dir.length + 1).split(path.sep);
     const table = relativePath[0];
     const file = relativePath[1];
 
     const fileConfig = _.find(
-      config.records[table],
-      record => record.fileName === file
+      latestConfig.records[table],
+      (record) => record.fileName === file
     );
     if (!fileConfig) {
       cb(
@@ -63,8 +63,8 @@ function watch(cb) {
 
     const { contentField } = fileConfig;
     const { fileName: fileTemplate } = _.find(
-      config.config[table].formats,
-      format => format.contentField === contentField
+      latestConfig.config[table].formats,
+      (format) => format.contentField === contentField
     );
     const fieldValues = getFieldValuesFromFileName(file, fileTemplate);
 
@@ -81,34 +81,32 @@ function watch(cb) {
     cb(null, 'change', stats, {
       table,
       sysId: fieldValues.sys_id,
-      response: updateRecordResponse
+      response: updateRecordResponse,
     });
   });
 
-  watcher.on('unlink', watchPath => {
+  watcher.on('unlink', (watchPath) => {
     delete fileStats[watchPath];
-    config = parseConfigFile();
+    const latestConfig = parseConfigFile();
 
     const relativePath = watchPath.substr(dir.length + 1).split(path.sep);
     const table = relativePath[0];
     const file = relativePath[1];
 
-    const configRecords = config.records[table];
+    const configRecords = latestConfig.records[table];
     const configRecordIndex = _.findIndex(
       configRecords,
-      record => record.fileName === file
+      (record) => record.fileName === file
     );
 
     if (configRecordIndex > -1) {
       configRecords.splice(configRecordIndex, 1);
 
-      saveConfigFile(config);
+      saveConfigFile(latestConfig);
       cb(null, 'unlink', null, { path: watchPath, table, file });
     }
   });
 
   return watcher;
-
-  //////
 }
 exports.watch = watch;

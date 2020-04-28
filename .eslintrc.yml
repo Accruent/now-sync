@@ -5,8 +5,8 @@ env:
   node: true
   jest/globals: true
 extends:
-- airbnb-base
-- prettier
+  - airbnb-base
+  - prettier
 rules:
   arrow-body-style:
     - error
@@ -15,13 +15,6 @@ rules:
     - error
     - never
     - arraysInArrays: true
-  arrow-parens:
-    - error
-    - as-needed
-  class-methods-use-this: off
-  comma-dangle:
-    - error
-    - never
   comma-spacing:
     - warn
   func-names:
@@ -77,8 +70,6 @@ rules:
   semi:
     - error
     - always
-  space-in-parens: off
-  spaced-comment: off
   strict:
     - warn
     - safe

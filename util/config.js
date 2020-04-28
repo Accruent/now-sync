@@ -2,7 +2,7 @@ const fs = require('fs');
 const _ = require('lodash');
 const prettier = require('prettier');
 const yaml = require('js-yaml');
-const { AUTH_FILE_PATH, CONFIG_FILE_PATH } = require('./../constants');
+const { AUTH_FILE_PATH, CONFIG_FILE_PATH } = require('../constants');
 const defaultConfig = require('../constants/default-config');
 
 /**
@@ -93,7 +93,8 @@ function sortConfig(configJson) {
     }
 
     return newConfig;
-  } else if (_.isArray(configJson) && configJson.length) {
+  }
+  if (_.isArray(configJson) && configJson.length) {
     switch (typeof configJson[0]) {
       case 'string': {
         return _.sortBy(configJson);
