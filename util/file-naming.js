@@ -4,7 +4,7 @@ const { parseConfigFile } = require('./config');
 
 // characters found in the record name that will be replaced
 const replaceFileNameRe = [
-  { toReplace: new RegExp('-', 'g'), replaceWith: '^' }
+  { toReplace: new RegExp('-', 'g'), replaceWith: '^' },
   // { toReplace: new RegExp('/', 'g'), replaceWith: '%' } // throwing an error instead
 ];
 
@@ -23,13 +23,11 @@ const FAULTY_PATHTOREGEXP_DELIMITER_STR = ['XYZ', /XYZ/g];
 function getSafeFileTemplate(fileTemplate) {
   const templateLastPeriodIndex = fileTemplate.lastIndexOf('.');
 
-  return fileTemplate.replace(
-    /\./g,
-    (char, index) =>
-      // replace . with FAULTY_PATHTOREGEXP_DELIMITER_STR (if it's not the last period separating the file extension)
-      index === templateLastPeriodIndex
-        ? char
-        : FAULTY_PATHTOREGEXP_DELIMITER_STR[0]
+  return fileTemplate.replace(/\./g, (char, index) =>
+    // replace . with FAULTY_PATHTOREGEXP_DELIMITER_STR (if it's not the last period separating the file extension)
+    index === templateLastPeriodIndex
+      ? char
+      : FAULTY_PATHTOREGEXP_DELIMITER_STR[0]
   );
 }
 
@@ -45,7 +43,7 @@ function compileFileName(fileTemplate, data) {
   const safeFileTemplate = getSafeFileTemplate(fileTemplate);
 
   const tokens = pathToRegexp.parse(safeFileTemplate, { delimiter: '-' });
-  const fileNameFragments = _.map(tokens, token => {
+  const fileNameFragments = _.map(tokens, (token) => {
     if (typeof token === 'string') {
       return token;
     }
@@ -58,13 +56,7 @@ function compileFileName(fileTemplate, data) {
       const errorFileNameReExec = errorFileNameRe[i].exec(tokenFromData);
       if (errorFileNameReExec) {
         throw new Error(
-          `Invalid character "${
-            errorFileNameReExec[0]
-          }" found in the record’s (${data.sys_id}) \`${
-            token.name
-          }\` field. Change your record’s \`${
-            token.name
-          }\` field value and try again.`
+          `Invalid character "${errorFileNameReExec[0]}" found in the record’s (${data.sys_id}) \`${token.name}\` field. Change your record’s \`${token.name}\` field value and try again.`
         );
       }
     }
@@ -95,7 +87,7 @@ exports.compileFileName = compileFileName;
  * @returns {string} compiled file template
  */
 function compileFileTemplate(nameFields, fieldName, extension) {
-  const filenamePrefix = _.map(nameFields, name => `:${name}`).join('-');
+  const filenamePrefix = _.map(nameFields, (name) => `:${name}`).join('-');
   return `${filenamePrefix}-${fieldName}-:sys_id.${extension}`;
 }
 exports.compileFileTemplate = compileFileTemplate;
@@ -127,13 +119,13 @@ function getFileNameFields(table) {
   const formattedNameFields =
     typeof nameFields === 'string' ? [nameFields] : [...nameFields];
   const tableFileKeyObjs = _.flatten(
-    _.map(tableConfig.formats, format => {
+    _.map(tableConfig.formats, (format) => {
       const keys = [];
-      pathToRegexp(format.fileName, keys, { delimiter: '-' });
+      pathToRegexp.pathToRegexp(format.fileName, keys, { delimiter: '-' });
       return keys;
     })
   );
-  const tableFileFields = _.map(tableFileKeyObjs, keyObj => keyObj.name);
+  const tableFileFields = _.map(tableFileKeyObjs, (keyObj) => keyObj.name);
 
   return _.uniq(formattedNameFields.concat(tableFileFields));
 }
@@ -156,9 +148,13 @@ function getFieldValuesFromFileName(fileName, fileTemplate) {
   const templateKeys = [];
   // we need to replace non-filename-extension period characters with a temporary string for the time being that won’t be detected as a delimiter in pathToRegexp (so that field values of reference fields can be used for file naming)
   const safeFileTemplate = getSafeFileTemplate(fileTemplate);
-  const templateTokens = pathToRegexp(safeFileTemplate, templateKeys, {
-    delimiter: '-'
-  });
+  const templateTokens = pathToRegexp.pathToRegexp(
+    safeFileTemplate,
+    templateKeys,
+    {
+      delimiter: '-',
+    }
+  );
   const fieldValues = templateTokens.exec(fileName);
 
   if (!fieldValues) {
@@ -171,7 +167,7 @@ function getFieldValuesFromFileName(fileName, fileTemplate) {
   const matches = {};
 
   // replacing the temporary string with .
-  _.forEach(templateKeys, token => {
+  _.forEach(templateKeys, (token) => {
     token.name = token.name.replace(FAULTY_PATHTOREGEXP_DELIMITER_STR[1], '.');
   });
 

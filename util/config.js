@@ -69,7 +69,7 @@ function saveConfigFile(configJson, isAuth) {
 
   const configFilePath = isAuth ? AUTH_FILE_PATH : CONFIG_FILE_PATH;
   const configYamlStr = yaml.safeDump(sortConfig(configJson));
-  const prettyYamlStr = prettier.format(configYamlStr);
+  const prettyYamlStr = prettier.format(configYamlStr, { parser: 'yaml' });
 
   fs.writeFileSync(configFilePath, prettyYamlStr);
   return configFilePath;
